@@ -2,7 +2,9 @@ package com.norbertblaise.taskrabbit.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFF6200EE)
-val Purple700 = Color(0xFF3700B3)
-val Teal200 = Color(0xFF03DAC5)
+val Charcoal = Color(0xFF324A5F)
+val Darkblue = Color(0xFF1B2A41)
+val Ink = Color(0xFF0C1821)
+val Salmon500 = Color(0xFFF15156)
+val DarkCyan = Color(0xFF2274A5)
+val Navy = Color(0xFF05204A)
