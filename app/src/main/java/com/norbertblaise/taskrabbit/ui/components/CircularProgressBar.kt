@@ -8,6 +8,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
@@ -29,8 +30,9 @@ fun CircularProgressBar(
     label: String,
     currentPom: String,
     numPoms: String,
-    radius: Dp = 260.dp,
+    radius: Dp = 320.dp,
     color: Color,
+
 
     ) {
     val currPercentage = animateFloatAsState(
@@ -40,23 +42,33 @@ fun CircularProgressBar(
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.size(
-            radius * 2f
+            radius
         )
     ) {
         androidx.compose.foundation.Canvas(
-            modifier = Modifier.size(radius * 2f),
+            modifier = Modifier.size(radius)
+                ,
             onDraw = {
-                drawCircle(
+
+                drawArc(
+
                     color = Grey,
-                    style = Stroke(38.dp.toPx())
+                    startAngle = -90f,
+                    sweepAngle = 360f,
+                    useCenter = false,
+                    style = Stroke(30.dp.toPx(), cap = StrokeCap.Round),
+                    size = Size(size.width, size.height)
                 )
                 drawArc(
+
                     color = color,
                     startAngle = -90f,
                     sweepAngle = 360 * currPercentage.value,
                     useCenter = false,
-                    style = Stroke(38.dp.toPx(), cap = StrokeCap.Round)
+                    style = Stroke(30.dp.toPx(), cap = StrokeCap.Round),
+                    size = Size(size.width, size.height)
                 )
+
             }
         )
 
