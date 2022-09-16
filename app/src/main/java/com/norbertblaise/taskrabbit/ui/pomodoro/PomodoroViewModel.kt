@@ -1,4 +1,4 @@
-package com.norbertblaise.taskrabbit
+package com.norbertblaise.taskrabbit.ui.pomodoro
 
 import androidx.lifecycle.ViewModel
 

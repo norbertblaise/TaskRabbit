@@ -9,7 +9,15 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHost
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import com.norbertblaise.taskrabbit.ui.pomodoro.PomodoroScreen
+import com.norbertblaise.taskrabbit.ui.settings.SettingsScreen
 import com.norbertblaise.taskrabbit.ui.theme.TaskRabbitTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +30,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Greeting("Android")
+                    //todo add NavHost
                 }
             }
         }
@@ -30,14 +38,31 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
+fun TaskRabbitNavHost(
+    navController: NavHostController,
+    modifier: Modifier
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Pomodoro.route,
+        modifier = modifier
+    ) {
+        composable(route = Pomodoro.route) {
+            PomodoroScreen(
+                onSettingsClick = { navController.navigateSingleTopTo(Settings.route) }
+            //todo add  navigation to ChartScreen
+            )
+        }
+        composable(route = Settings.route) {
+            SettingsScreen()
+        }
+    }
+
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    TaskRabbitTheme {
-        Greeting("Android")
+fun NavHostController.navigateSingleTopTo(route: String) =
+    this.navigate(route) {
+        popUpTo(this@navigateSingleTopTo.graph.findStartDestination().id) {
+            saveState = true
+        }
     }
-}
