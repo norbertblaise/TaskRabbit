@@ -1,6 +1,7 @@
 package com.norbertblaise.taskrabbit.ui.settings
 
 import android.widget.Space
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -13,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.norbertblaise.taskrabbit.R
+import com.norbertblaise.taskrabbit.ui.components.SettingsTopAppBar
 import com.norbertblaise.taskrabbit.ui.theme.Ink
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
 
@@ -20,7 +22,7 @@ import com.norbertblaise.taskrabbit.ui.theme.Salmon500
 fun SettingsScreen() {
     Scaffold(
         topBar = {
-            SettingsTopAppBar()
+            SettingsTopAppBar(title = "Settings")
         },
         content = {
 
@@ -28,27 +30,7 @@ fun SettingsScreen() {
     )
 }
 
-@Composable
-fun SettingsTopAppBar() {
-    TopAppBar(
-        title = {
-            Text("Settings", color = Ink)
-        },
-        backgroundColor = Color.White,
-        contentColor = Ink,
-        elevation = 0.dp,
-        navigationIcon = {
-            IconButton(
-                onClick = { /*TODO*/ }) {
-                Icon(
-                    Icons.Default.ArrowBack,
-                    tint = Ink,
-                    contentDescription = "back button"//todo extract string reseouce
-                )
-            }
-        }
-    )
-}
+
 
 @Composable
 fun SettingsScreenBody() {
@@ -66,23 +48,33 @@ fun SettingsScreenBody() {
         )
         Spacer(modifier = Modifier.height(12.dp))
         //todo add list of settings items
+        SettingsListItem(label = "Focus Time", value = "25 min")
+        SettingsListItem(label = "Short Break", value = "5 min")
+        SettingsListItem(label = "Long Break", value = "20 min")
+        SettingsListItem(label = "Long Break Interval", value = "4 Pomos")
     }
 }
 
 @Composable
 fun SettingsListItem(
-    //todo make clickable
+    label: String,
+    value: String,
+    onClick: () -> Unit = {}
 ) {
-    Row(modifier = Modifier.fillMaxWidth()) {
+    Row(modifier = Modifier
+        .padding(bottom = 8.dp)
+        .fillMaxWidth()
+        .clickable { onClick}
+        ) {
         Column(horizontalAlignment = Alignment.Start) {
             Text(
-                "Focus Time",//todo replace with variable
+                "$label",
                 style = MaterialTheme.typography.h5,
                 color = Ink
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "25 min", //todo replace with variable
+                "$value",
                 style = MaterialTheme.typography.body1,
                 color = Salmon500
             )
@@ -93,7 +85,7 @@ fun SettingsListItem(
 @Preview(showBackground = true)
 @Composable
 fun SettingsTopAppBarPreview() {
-    SettingsTopAppBar()
+    SettingsTopAppBar("Settings")
 }
 
 @Preview(showBackground = true)
