@@ -8,6 +8,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.currentComposer
 import androidx.compose.ui.Modifier
 
 import androidx.compose.ui.tooling.preview.Preview
@@ -17,6 +18,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.norbertblaise.taskrabbit.ui.pomodoro.PomodoroScreen
+import com.norbertblaise.taskrabbit.ui.settings.SettingsDetailScreen
 import com.norbertblaise.taskrabbit.ui.settings.SettingsScreen
 import com.norbertblaise.taskrabbit.ui.theme.TaskRabbitTheme
 
@@ -56,6 +58,8 @@ fun TaskRabbitNavHost(
         composable(route = Settings.route) {
             SettingsScreen()
         }
+        composable(route = SettingsDetail.route){}
+//        SettingsDetailScreen(timerSettingsParameter = )
     }
 
 }
