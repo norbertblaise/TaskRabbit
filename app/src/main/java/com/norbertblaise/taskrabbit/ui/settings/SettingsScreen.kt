@@ -14,26 +14,34 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.norbertblaise.taskrabbit.R
+import com.norbertblaise.taskrabbit.common.settingParameter
+import com.norbertblaise.taskrabbit.models.TimerSettingsParameter
 import com.norbertblaise.taskrabbit.ui.components.SettingsTopAppBar
 import com.norbertblaise.taskrabbit.ui.theme.Ink
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
+import java.util.Timer
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    onSettingsClick: (Int) -> Unit = {}
+) {
     Scaffold(
         topBar = {
             SettingsTopAppBar(title = "Settings")
         },
         content = {
-
+            SettingsScreenBody(
+                onSettingsClick = onSettingsClick
+            )
         }
     )
 }
 
 
-
 @Composable
-fun SettingsScreenBody() {
+fun SettingsScreenBody(
+    onSettingsClick: (Int) -> Unit = {}
+) {
     Column(
         horizontalAlignment = Alignment.Start,
         modifier = Modifier
@@ -47,11 +55,23 @@ fun SettingsScreenBody() {
             color = Ink
         )
         Spacer(modifier = Modifier.height(12.dp))
-        //todo add list of settings items
-        SettingsListItem(label = "Focus Time", value = "25 min")
-        SettingsListItem(label = "Short Break", value = "5 min")
-        SettingsListItem(label = "Long Break", value = "20 min")
-        SettingsListItem(label = "Long Break Interval", value = "4 Pomos")
+        SettingsListItem(
+            label = "Focus Time",
+            value = "25 min",
+            onClick = { onSettingsClick(0) })
+        SettingsListItem(
+            label = "Short Break",
+            value = "5 min",
+            onClick = { onSettingsClick(1) })
+        SettingsListItem(
+            label = "Long Break",
+            value = "20 min",
+            onClick = { onSettingsClick(2) })
+        SettingsListItem(
+            label = "Long Break Interval",
+            value = "4 Pomos",
+            onClick = { onSettingsClick(3) })
+
     }
 }
 
@@ -64,8 +84,8 @@ fun SettingsListItem(
     Row(modifier = Modifier
         .padding(bottom = 8.dp)
         .fillMaxWidth()
-        .clickable { onClick}
-        ) {
+        .clickable { onClick }
+    ) {
         Column(horizontalAlignment = Alignment.Start) {
             Text(
                 "$label",

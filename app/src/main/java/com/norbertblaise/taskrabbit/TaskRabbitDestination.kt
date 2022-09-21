@@ -1,7 +1,9 @@
 package com.norbertblaise.taskrabbit
 
 import androidx.navigation.NavType
+import androidx.navigation.NavType.*
 import androidx.navigation.navArgument
+import com.norbertblaise.taskrabbit.models.TimerSettingsParameter
 
 /**
  * Contract for information needed on every TaskRabbit navigation destination
@@ -33,6 +35,6 @@ object SettingsDetail : TaskRabbitDestination {
     const val settingsParameterType = "settings_parameterType"
     val routeWithArgs = "${route}/{${settingsParameterType}}"
     val arguments = listOf(
-        navArgument(settingsParameterType) { type = NavType.IntArrayType }
+        navArgument(settingsParameterType) { type = NavType.IntType }
     )
 }

@@ -12,12 +12,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.norbertblaise.taskrabbit.common.descriptionsList
+import com.norbertblaise.taskrabbit.common.settingParameter
 import com.norbertblaise.taskrabbit.models.TimerSettingsParameter
 import com.norbertblaise.taskrabbit.ui.components.SettingsTopAppBar
 import com.norbertblaise.taskrabbit.ui.theme.Charcoal
 import com.norbertblaise.taskrabbit.ui.theme.Ink
 import com.norbertblaise.taskrabbit.ui.theme.Salmon100
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
+import java.util.Timer
 
 val focusTimeOptions = listOf(10, 25, 55, 90, "Custom")
 val shortBreakOptions = listOf(5, 10, 15, 20, "Custom")
@@ -25,8 +28,21 @@ val longBreakOptions = listOf(20, 30, 40, 50, "Custom")
 val longBreakIntervalOptions = listOf(4, 6, 8, "Custom")
 
 //todo make recieve screen title along with value to modify
+
+fun mapIntToTimerSettingsParameter(value: Int): TimerSettingsParameter {
+    return when (value) {
+        0 -> TimerSettingsParameter.FOCUS_TIME
+        1 -> TimerSettingsParameter.SHORT_BREAK
+        2 -> TimerSettingsParameter.LONG_BREAK
+        3 -> TimerSettingsParameter.LONG_BREAK_INTERVAL
+        else -> throw error("only int 0 - 3 are valid params")
+    }
+}
+
 @Composable
-fun SettingsDetailScreen(timerSettingsParameter: TimerSettingsParameter) {
+fun SettingsDetailScreen(arg: Int) {
+    val timerSettingsParameter = mapIntToTimerSettingsParameter(arg)
+    //map int to
     val radioOptions = when (timerSettingsParameter) {
         TimerSettingsParameter.FOCUS_TIME -> focusTimeOptions
         TimerSettingsParameter.SHORT_BREAK -> shortBreakOptions
@@ -39,20 +55,9 @@ fun SettingsDetailScreen(timerSettingsParameter: TimerSettingsParameter) {
     }
     val unit = if (timerSettingsParameter == TimerSettingsParameter.LONG_BREAK_INTERVAL) "Pomos"
     else "min"
-    val descriptionsList = listOf(
-        "How long do you want to focus for?",
-        "Pick Your short break duration",
-        "Pick your long break duration",
-        "Pick long break interval"
-    )
-    val pageTitle = listOf(
-        "Focus Time",
-        "Short Break",
-        "Long Break",
-        "Long Break Interval"
-    )
 
-    Scaffold(topBar = { SettingsTopAppBar(title = pageTitle[timerSettingsParameter.type]) }) {
+
+    Scaffold(topBar = { SettingsTopAppBar(title = settingParameter[timerSettingsParameter.type]) }) {
         Column(modifier = Modifier.padding(horizontal = 24.dp)) {
             Text(
                 text = descriptionsList[timerSettingsParameter.type],
@@ -124,5 +129,5 @@ fun SettingsOptions(unit: String, radioOptions: List<Any>) {
 @Preview(showBackground = true)
 @Composable
 fun SettingsDetailScreenPreview() {
-    SettingsDetailScreen(TimerSettingsParameter.LONG_BREAK_INTERVAL)
+    SettingsDetailScreen(2)
 }

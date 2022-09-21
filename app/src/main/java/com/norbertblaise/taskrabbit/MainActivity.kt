@@ -52,14 +52,25 @@ fun TaskRabbitNavHost(
         composable(route = Pomodoro.route) {
             PomodoroScreen(
                 onSettingsClick = { navController.navigateSingleTopTo(Settings.route) }
-            //todo add  navigation to ChartScreen
+                //todo add  navigation to ChartScreen
             )
         }
         composable(route = Settings.route) {
-            SettingsScreen()
+            SettingsScreen(
+                onSettingsClick = {
+//                    navController.navigateSingleTopTo(SettingsDetailScreen(timerSettingsParameter = ))
+                }
+            )
         }
-        composable(route = SettingsDetail.route){}
-//        SettingsDetailScreen(timerSettingsParameter = )
+        composable(
+            route = SettingsDetail.routeWithArgs,
+            arguments = SettingsDetail.arguments
+        ) { navBackStackEntry ->
+            val settingsParam =
+                navBackStackEntry.arguments?.getInt(SettingsDetail.settingsParameterType)
+            SettingsDetailScreen(arg = settingsParam!!)
+        }
+
     }
 
 }
@@ -70,3 +81,6 @@ fun NavHostController.navigateSingleTopTo(route: String) =
             saveState = true
         }
     }
+
+private fun NavHostController.navigatetoSettingsDetail(route: String) =
+    this.navigateSingleTopTo("${SettingsDetail.route}/{")
