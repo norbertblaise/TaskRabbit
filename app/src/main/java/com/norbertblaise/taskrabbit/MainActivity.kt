@@ -4,11 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentComposer
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 
 import androidx.compose.ui.tooling.preview.Preview
@@ -17,6 +19,8 @@ import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.norbertblaise.taskrabbit.ui.pomodoro.PomodoroScreen
 import com.norbertblaise.taskrabbit.ui.settings.SettingsDetailScreen
 import com.norbertblaise.taskrabbit.ui.settings.SettingsScreen
@@ -26,15 +30,26 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            TaskRabbitTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    //todo add NavHost
-                }
-            }
+            TaskRabbitApp()
+        }
+    }
+}
+
+@Composable
+fun TaskRabbitApp() {
+    TaskRabbitTheme {
+        val navController = rememberNavController()
+        val currentBackStack by navController.currentBackStackEntryAsState()
+        val currentDestination = currentBackStack?.destination
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colors.background
+        ) {
+            //todo add NavHost
+            TaskRabbitNavHost(
+                navController = navController, modifier =
+                Modifier.padding()
+            )
         }
     }
 }

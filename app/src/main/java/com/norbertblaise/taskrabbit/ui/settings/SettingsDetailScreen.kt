@@ -27,7 +27,7 @@ val shortBreakOptions = listOf(5, 10, 15, 20, "Custom")
 val longBreakOptions = listOf(20, 30, 40, 50, "Custom")
 val longBreakIntervalOptions = listOf(4, 6, 8, "Custom")
 
-//todo make recieve screen title along with value to modify
+
 
 fun mapIntToTimerSettingsParameter(value: Int): TimerSettingsParameter {
     return when (value) {
