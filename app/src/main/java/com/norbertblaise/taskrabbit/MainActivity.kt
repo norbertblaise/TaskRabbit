@@ -1,6 +1,7 @@
 package com.norbertblaise.taskrabbit
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,8 @@ import com.norbertblaise.taskrabbit.ui.pomodoro.PomodoroScreen
 import com.norbertblaise.taskrabbit.ui.settings.SettingsDetailScreen
 import com.norbertblaise.taskrabbit.ui.settings.SettingsScreen
 import com.norbertblaise.taskrabbit.ui.theme.TaskRabbitTheme
+
+private const val TAG = "MainActivity"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,15 +69,22 @@ fun TaskRabbitNavHost(
     ) {
         composable(route = Pomodoro.route) {
             PomodoroScreen(
-                onSettingsClick = { navController.navigateSingleTopTo(Settings.route) }
+                onSettingsClick = {
+                    Log.d(TAG, "TaskRabbitNavHost: Settings clicked")
+                    navController.navigateSingleTopTo(Settings.route)
+                }
                 //todo add  navigation to ChartScreen
             )
         }
         composable(route = Settings.route) {
             SettingsScreen(
                 onSettingsClick = {
-//                    navController.navigateSingleTopTo(SettingsDetailScreen(timerSettingsParameter = ))
+                    navController.navigateSingleTopTo(SettingsDetail.routeWithArgs)
+                },
+                onUpButtonClicked = {
+                    navController.popBackStack()
                 }
+
             )
         }
         composable(
@@ -83,7 +93,8 @@ fun TaskRabbitNavHost(
         ) { navBackStackEntry ->
             val settingsParam =
                 navBackStackEntry.arguments?.getInt(SettingsDetail.settingsParameterType)
-            SettingsDetailScreen(arg = settingsParam!!)
+            SettingsDetailScreen(arg = settingsParam!!,
+                onUpButtonClicked = { navController.popBackStack() })
         }
 
     }

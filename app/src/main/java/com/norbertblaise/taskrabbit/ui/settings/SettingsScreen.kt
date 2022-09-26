@@ -23,11 +23,15 @@ import java.util.Timer
 
 @Composable
 fun SettingsScreen(
-    onSettingsClick: (Int) -> Unit = {}
+    onSettingsClick: (Int) -> Unit = {},
+    onUpButtonClicked: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
-            SettingsTopAppBar(title = "Settings")
+            SettingsTopAppBar(
+                title = "Settings",
+                onUpButtonClicked = onUpButtonClicked
+            )
         },
         content = {
             SettingsScreenBody(
@@ -105,7 +109,8 @@ fun SettingsListItem(
 @Preview(showBackground = true)
 @Composable
 fun SettingsTopAppBarPreview() {
-    SettingsTopAppBar("Settings")
+    SettingsTopAppBar("Settings",
+        onUpButtonClicked = {/*do nothing*/ })
 }
 
 @Preview(showBackground = true)

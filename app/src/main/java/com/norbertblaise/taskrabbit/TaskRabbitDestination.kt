@@ -32,7 +32,7 @@ object SettingsDetail : TaskRabbitDestination {
     override val route: String
         get() = "settings_detail"
 
-    const val settingsParameterType = "settings_parameterType"
+    const val settingsParameterType = "settings_parameter_type"
     val routeWithArgs = "${route}/{${settingsParameterType}}"
     val arguments = listOf(
         navArgument(settingsParameterType) { type = NavType.IntType }

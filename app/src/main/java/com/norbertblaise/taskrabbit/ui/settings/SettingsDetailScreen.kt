@@ -28,7 +28,6 @@ val longBreakOptions = listOf(20, 30, 40, 50, "Custom")
 val longBreakIntervalOptions = listOf(4, 6, 8, "Custom")
 
 
-
 fun mapIntToTimerSettingsParameter(value: Int): TimerSettingsParameter {
     return when (value) {
         0 -> TimerSettingsParameter.FOCUS_TIME
@@ -40,7 +39,10 @@ fun mapIntToTimerSettingsParameter(value: Int): TimerSettingsParameter {
 }
 
 @Composable
-fun SettingsDetailScreen(arg: Int) {
+fun SettingsDetailScreen(
+    arg: Int,
+    onUpButtonClicked: () -> Unit
+) {
     val timerSettingsParameter = mapIntToTimerSettingsParameter(arg)
     //map int to
     val radioOptions = when (timerSettingsParameter) {
@@ -57,7 +59,12 @@ fun SettingsDetailScreen(arg: Int) {
     else "min"
 
 
-    Scaffold(topBar = { SettingsTopAppBar(title = settingParameter[timerSettingsParameter.type]) }) {
+    Scaffold(topBar = {
+        SettingsTopAppBar(
+            title = settingParameter[timerSettingsParameter.type],
+            onUpButtonClicked = onUpButtonClicked
+        )
+    }) {
         Column(modifier = Modifier.padding(horizontal = 24.dp)) {
             Text(
                 text = descriptionsList[timerSettingsParameter.type],
@@ -129,5 +136,5 @@ fun SettingsOptions(unit: String, radioOptions: List<Any>) {
 @Preview(showBackground = true)
 @Composable
 fun SettingsDetailScreenPreview() {
-    SettingsDetailScreen(2)
+    SettingsDetailScreen(2, onUpButtonClicked = {/*Do nothing*/ })
 }

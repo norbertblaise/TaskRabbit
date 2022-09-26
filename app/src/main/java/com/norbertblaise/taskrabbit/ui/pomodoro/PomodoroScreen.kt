@@ -1,5 +1,6 @@
 package com.norbertblaise.taskrabbit.ui.pomodoro
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -18,6 +19,8 @@ import com.norbertblaise.taskrabbit.ui.components.CircularProgressBar
 import com.norbertblaise.taskrabbit.ui.theme.Grey
 import com.norbertblaise.taskrabbit.ui.theme.Ink
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
+
+private const val TAG = "PomodoroScreen"
 
 @Composable
 fun PomodoroScreen(
@@ -52,14 +55,14 @@ fun PomodoroScreenAppBar(
         backgroundColor = Color.White,
         elevation = 0.dp,
         actions = {
-            IconButton(onClick = { onChartClicked }) {
+            IconButton(onClick =  onChartClicked ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_chart_outlined),
                     tint = Ink,
                     contentDescription = "View Stats button" // todo extract string resource
                 )
             }
-            IconButton(onClick = { onSettingsClicked }) {
+            IconButton(onClick =  onSettingsClicked ) {
                 Icon(
                     Icons.Default.Settings,
                     tint = Ink,
@@ -116,7 +119,9 @@ fun PomodoroScreenBody() {
             }
             Spacer(modifier = Modifier.width(8.dp))
             ExtendedFloatingActionButton(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    Log.d(TAG, "PomodoroScreenBody: startbutton clicked")/*TODO*/
+                },
                 icon = {
                     Icon(Icons.Default.PlayArrow, contentDescription = null)
                 },

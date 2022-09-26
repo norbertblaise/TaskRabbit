@@ -12,7 +12,10 @@ import androidx.compose.ui.unit.dp
 import com.norbertblaise.taskrabbit.ui.theme.Ink
 
 @Composable
-fun SettingsTopAppBar(title: String) {
+fun SettingsTopAppBar(
+    title: String,
+    onUpButtonClicked: () -> Unit
+) {
     TopAppBar(
         title = {
             Text(title, color = Ink)
@@ -22,7 +25,8 @@ fun SettingsTopAppBar(title: String) {
         elevation = 0.dp,
         navigationIcon = {
             IconButton(
-                onClick = { /*TODO*/ }) {
+                onClick = onUpButtonClicked
+            ) {
                 Icon(
                     Icons.Default.ArrowBack,
                     tint = Ink,
