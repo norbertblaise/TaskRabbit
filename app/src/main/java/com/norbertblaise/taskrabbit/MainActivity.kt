@@ -8,15 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -78,12 +74,23 @@ fun TaskRabbitNavHost(
         }
         composable(route = Settings.route) {
             SettingsScreen(
-                onSettingsClick = {
-                    navController.navigateSingleTopTo(SettingsDetail.routeWithArgs)
-                },
                 onUpButtonClicked = {
                     navController.popBackStack()
+                },
+                onSettingsItemClicked = { settingsCategory ->
+
+                    navController.navigateToSettingsDetail(settingsCategory)
+                },
+                onShortBreakClicked = {
+
+                },
+                onLongBreakClicked = {
+
+                },
+                onLongBreakIntervalClicked = {
+
                 }
+
 
             )
         }
@@ -108,5 +115,5 @@ fun NavHostController.navigateSingleTopTo(route: String) =
         }
     }
 
-private fun NavHostController.navigatetoSettingsDetail(route: String) =
-    this.navigateSingleTopTo("${SettingsDetail.route}/{")
+private fun NavHostController.navigateToSettingsDetail(settingsCategory: Int) =
+    this.navigateSingleTopTo("${SettingsDetail.route}/$settingsCategory")

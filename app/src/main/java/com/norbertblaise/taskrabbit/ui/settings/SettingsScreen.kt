@@ -1,29 +1,23 @@
 package com.norbertblaise.taskrabbit.ui.settings
 
-import android.widget.Space
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.norbertblaise.taskrabbit.R
-import com.norbertblaise.taskrabbit.common.settingParameter
-import com.norbertblaise.taskrabbit.models.TimerSettingsParameter
 import com.norbertblaise.taskrabbit.ui.components.SettingsTopAppBar
 import com.norbertblaise.taskrabbit.ui.theme.Ink
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
-import java.util.Timer
 
 @Composable
 fun SettingsScreen(
-    onSettingsClick: (Int) -> Unit = {},
+    onSettingsItemClicked: (Int) -> Unit = {},
+    onShortBreakClicked: (Int) -> Unit = {},
+    onLongBreakClicked: (Int) -> Unit = {},
+    onLongBreakIntervalClicked: (Int) -> Unit = {},
     onUpButtonClicked: () -> Unit = {}
 ) {
     Scaffold(
@@ -35,7 +29,10 @@ fun SettingsScreen(
         },
         content = {
             SettingsScreenBody(
-                onSettingsClick = onSettingsClick
+                onSettingsItemClicked = onSettingsItemClicked,
+//                onShortBreakClicked = onShortBreakClicked,
+//                onLongBreakClicked = onLongBreakClicked,
+//                onLongBreakIntervalClicked = onLongBreakIntervalClicked
             )
         }
     )
@@ -44,7 +41,10 @@ fun SettingsScreen(
 
 @Composable
 fun SettingsScreenBody(
-    onSettingsClick: (Int) -> Unit = {}
+    onSettingsItemClicked: (Int) -> Unit = {},
+    onShortBreakClicked: (Int) -> Unit = {},
+    onLongBreakClicked: (Int) -> Unit = {},
+    onLongBreakIntervalClicked: (Int) -> Unit = {},
 ) {
     Column(
         horizontalAlignment = Alignment.Start,
@@ -62,19 +62,19 @@ fun SettingsScreenBody(
         SettingsListItem(
             label = "Focus Time",
             value = "25 min",
-            onClick = { onSettingsClick(0) })
+            onClick = { onSettingsItemClicked(0) })
         SettingsListItem(
             label = "Short Break",
             value = "5 min",
-            onClick = { onSettingsClick(1) })
+            onClick = { onSettingsItemClicked(1) })
         SettingsListItem(
             label = "Long Break",
             value = "20 min",
-            onClick = { onSettingsClick(2) })
+            onClick = { onSettingsItemClicked(2) })
         SettingsListItem(
             label = "Long Break Interval",
             value = "4 Pomos",
-            onClick = { onSettingsClick(3) })
+            onClick = { onSettingsItemClicked(3) })
 
     }
 }
@@ -88,7 +88,7 @@ fun SettingsListItem(
     Row(modifier = Modifier
         .padding(bottom = 8.dp)
         .fillMaxWidth()
-        .clickable { onClick }
+        .clickable(onClick = onClick)
     ) {
         Column(horizontalAlignment = Alignment.Start) {
             Text(
