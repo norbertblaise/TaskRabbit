@@ -19,11 +19,13 @@ import com.norbertblaise.taskrabbit.ui.components.CircularProgressBar
 import com.norbertblaise.taskrabbit.ui.theme.Grey
 import com.norbertblaise.taskrabbit.ui.theme.Ink
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 private const val TAG = "PomodoroScreen"
 
 @Composable
 fun PomodoroScreen(
+    viewModel: PomodoroViewModel = viewModel(),
     onSettingsClick: () -> Unit = {},
     onChartClick: () -> Unit = {}
 ) {
@@ -36,7 +38,7 @@ fun PomodoroScreen(
             )
         },
         content = {
-            PomodoroScreenBody()
+            PomodoroScreenBody(viewModel = viewModel)
         }
 
 
@@ -74,7 +76,7 @@ fun PomodoroScreenAppBar(
 }
 
 @Composable
-fun PomodoroScreenBody() {
+fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
     Column(
 
         modifier = Modifier
@@ -93,6 +95,7 @@ fun PomodoroScreenBody() {
         ) {
             CircularProgressBar(
                 percentage = 0.7f,
+                timerValue = viewModel.currentTimeLeft,
                 label = "Focus",
                 currentPom = "1",
                 numPoms = "4",
@@ -121,6 +124,7 @@ fun PomodoroScreenBody() {
             ExtendedFloatingActionButton(
                 onClick = {
                     Log.d(TAG, "PomodoroScreenBody: startbutton clicked")/*TODO*/
+                    viewModel.startTimer()
                 },
                 icon = {
                     Icon(Icons.Default.PlayArrow, contentDescription = null)
@@ -158,7 +162,7 @@ fun PomodoroScreenTopAppBarPreview() {
 @Preview(showBackground = true)
 @Composable
 fun PomodoroScreenBodyPreview() {
-    PomodoroScreenBody()
+    PomodoroScreenBody(viewModel = viewModel())
 }
 
 @Preview(showBackground = true)

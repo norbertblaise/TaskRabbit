@@ -1,5 +1,8 @@
 package com.norbertblaise.taskrabbit.ui.components
 
+import android.os.Build
+import android.text.format.DateUtils
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
@@ -23,10 +26,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.norbertblaise.taskrabbit.ui.theme.Grey
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
+import java.time.format.DateTimeFormatter
+
+
+fun formatTime(timeInLong: Long): String {
+    return DateUtils.formatElapsedTime(timeInLong)
+}
 
 @Composable
 fun CircularProgressBar(
     percentage: Float,
+    timerValue: Long,
     label: String,
     currentPom: String,
     numPoms: String,
@@ -46,8 +56,7 @@ fun CircularProgressBar(
         )
     ) {
         androidx.compose.foundation.Canvas(
-            modifier = Modifier.size(radius)
-                ,
+            modifier = Modifier.size(radius),
             onDraw = {
 
                 drawArc(
@@ -79,7 +88,7 @@ fun CircularProgressBar(
 
                 )
             Text(
-                text = currPercentage.value.toString(),
+                text = formatTime(timerValue),
                 style = MaterialTheme.typography.h1
             )
             Text(
@@ -98,6 +107,7 @@ fun CircularProgressBar(
 fun CircularProgressBarPreview() {
     CircularProgressBar(
         percentage = 0.5f,
+        timerValue = 1000L,
         label = "Focus",
         currentPom = "2",
         numPoms = "4",
