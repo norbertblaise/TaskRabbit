@@ -124,7 +124,7 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
             ExtendedFloatingActionButton(
                 onClick = {
                     Log.d(TAG, "PomodoroScreenBody: startbutton clicked")/*TODO*/
-                    viewModel.startTimer()
+                    viewModel.startStopButtonClicked()
                 },
                 icon = {
                     Icon(Icons.Default.PlayArrow, contentDescription = null)
