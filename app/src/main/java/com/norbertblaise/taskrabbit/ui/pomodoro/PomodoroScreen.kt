@@ -97,7 +97,7 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
                 percentage = 0.7f,
                 timerValue = viewModel.currentTimeLeft,
                 label = "Focus",
-                currentPom = "1",
+                currentPom = viewModel.currentPom.toString(),
                 numPoms = "4",
                 color = Salmon500
             )
