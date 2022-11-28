@@ -129,7 +129,7 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
                 icon = {
                     Icon(Icons.Default.PlayArrow, contentDescription = null)
                 },
-                text = { Text(text = "Start") },
+                text = { Text(text = viewModel.startPauseButtonText) },
                 modifier = Modifier,
                 backgroundColor = Salmon500,
                 contentColor = Color.White
@@ -151,6 +151,7 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
         }
     }
 }
+
 
 
 @Preview(showBackground = true)
