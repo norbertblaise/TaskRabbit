@@ -1,9 +1,9 @@
 package com.norbertblaise.taskrabbit.common
 
 enum class TimerType{
-    INITIAL, FOCUS, SHORTBREAK, LONGBREAK
+     INITIAL, FOCUS, SHORTBREAK, LONGBREAK
 }
 
 enum class TimerState{
-    RUNNING, PAUSED, STOPPED
+    INITIAL, RUNNING, PAUSED, STOPPED
 }

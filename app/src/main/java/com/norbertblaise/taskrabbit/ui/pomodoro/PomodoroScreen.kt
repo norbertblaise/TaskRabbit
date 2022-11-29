@@ -3,15 +3,14 @@ package com.norbertblaise.taskrabbit.ui.pomodoro
 import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material.ContentAlpha.disabled
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.norbertblaise.taskrabbit.R
@@ -57,14 +56,14 @@ fun PomodoroScreenAppBar(
         backgroundColor = Color.White,
         elevation = 0.dp,
         actions = {
-            IconButton(onClick =  onChartClicked ) {
+            IconButton(onClick = onChartClicked) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_chart_outlined),
                     tint = Ink,
                     contentDescription = "View Stats button" // todo extract string resource
                 )
             }
-            IconButton(onClick =  onSettingsClicked ) {
+            IconButton(onClick = onSettingsClicked) {
                 Icon(
                     Icons.Default.Settings,
                     tint = Ink,
@@ -98,7 +97,7 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
                 timerValue = viewModel.currentTimeLeft,
                 label = "Focus",
                 currentPom = viewModel.currentPom.toString(),
-                numPoms = "4",
+                numPoms = viewModel.numberOfPoms.toString(),
                 color = Salmon500
             )
         }
@@ -109,11 +108,12 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
             modifier = Modifier.fillMaxWidth()
         ) {
             FloatingActionButton(
-                onClick = { /*TODO*/ },
+                onClick = { viewModel.onResetButtonClick() },
                 modifier = Modifier
                     .size(40.dp),
                 backgroundColor = Grey,
                 contentColor = Ink
+
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_replay),
@@ -124,10 +124,13 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
             ExtendedFloatingActionButton(
                 onClick = {
                     Log.d(TAG, "PomodoroScreenBody: startbutton clicked")/*TODO*/
-                    viewModel.startStopButtonClicked()
+                    viewModel.onStartStopButtonClick()
                 },
                 icon = {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null)
+                    Icon(
+                        painter = painterResource(id = viewModel.startPauseButtonIcon),
+                        contentDescription = null
+                    )
                 },
                 text = { Text(text = viewModel.startPauseButtonText) },
                 modifier = Modifier,
@@ -151,7 +154,6 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
         }
     }
 }
-
 
 
 @Preview(showBackground = true)

@@ -6,9 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.norbertblaise.taskrabbit.R
 import com.norbertblaise.taskrabbit.common.TimerState
 import com.norbertblaise.taskrabbit.common.TimerType
-import java.util.Timer
 
 private const val TAG = "PomodoroViewModel"
 
@@ -16,12 +16,13 @@ class PomodoroViewModel : ViewModel() {
     var pomIsInitialized = false
     var focusTime = 5000L
     var shortBreakTime = 2000L
-    var longBreakTimer = 3000L
+    var longBreakTime = 3000L
     var numberOfPoms = 4
 
     var currentTimeLeft by mutableStateOf(0L)
     var currentPom by mutableStateOf(1)
     var startPauseButtonText by mutableStateOf("Start")
+    var startPauseButtonIcon by mutableStateOf(R.drawable.ic_play_arrow)
 
     var timerType = TimerType.INITIAL
     var timerState = TimerState.STOPPED
@@ -30,27 +31,78 @@ class PomodoroViewModel : ViewModel() {
 
     lateinit var timer: CountDownTimer
 
-    fun startStopButtonClicked() {
+    /**
+     * This method sets up the pomodoro session, setting variables for focus time,
+     * short and long break by getting these values that are stored in settings
+     */
+    fun initPomodoro() {
+        //todo connect to settings mechanisim
+        focusTime = 20000L
+        Log.d(TAG, "initPomodoro: focusTime is set to $focusTime")
+        shortBreakTime = 5000L
+        longBreakTime = 10000L
+        numberOfPoms = 4
+        currentPom = 1
+        timerDuration = focusTime
+        pomIsInitialized = true
+
+    }
+
+    /**
+     * Click handler for startStopButton
+     */
+    fun onStartStopButtonClick() {
         when (timerState) {
             TimerState.STOPPED -> {
                 if (pomIsInitialized == false) {
                     initPomodoro()
                     startTimer()
-                }else{
+                } else {
                     startTimer()
                 }
 
             }//todo start timer
-            TimerState.PAUSED ->{
+            TimerState.PAUSED -> {
                 resumeTimer()
                 TimerState.RUNNING
-                setStartPauseButtonText()
+                setStartPauseButtonContents()
+
             }
 
             else -> {
                 stopTimer()
-                setStartPauseButtonText()
+                setStartPauseButtonContents()
             }
+        }
+    }
+
+    /**
+     * Handles clicks on reset Timer button
+     */
+    fun onResetButtonClick() {
+
+        when (timerState) {
+            TimerState.PAUSED -> {
+                resetCurrentTimer()
+            }
+            TimerState.RUNNING -> {
+                stopTimer()
+                resetCurrentTimer()
+                startTimer()
+            }
+            TimerState.STOPPED -> {
+                //do nothing
+            }
+
+        }
+    }
+
+    /**
+     * Resets current timer back to Timer value cannot reset shortbreak and longbreak timers
+     */
+    private fun resetCurrentTimer() {
+        if (timerType == TimerType.FOCUS) {
+            currentTimeLeft = focusTime
         }
     }
 
@@ -63,7 +115,7 @@ class PomodoroViewModel : ViewModel() {
         createTimer(timerDuration)
         timer.start()
         timerState = TimerState.RUNNING
-        setStartPauseButtonText()
+        setStartPauseButtonContents()
     }
 
     /**
@@ -77,11 +129,11 @@ class PomodoroViewModel : ViewModel() {
     /**
      * This stops any running timer but retains all variables
      */
-    fun pauseTimer(){
+    fun pauseTimer() {
         timer.cancel()
     }
 
-    fun resumeTimer(){
+    fun resumeTimer() {
         createTimer(currentTimeLeft)
         timer.start()
     }
@@ -89,10 +141,13 @@ class PomodoroViewModel : ViewModel() {
     /**
      * creates a timer object with the specified duration
      */
-    fun createTimer(duration: Long){
+    fun createTimer(duration: Long) {
         timer = object : CountDownTimer(duration, 1000) {
             override fun onFinish() {
-
+                timerState = TimerState.STOPPED
+                setStartPauseButtonContents()
+                nextTimer()
+                startTimer()
             }
 
             override fun onTick(p0: Long) {
@@ -100,6 +155,14 @@ class PomodoroViewModel : ViewModel() {
                 currentTimeLeft = p0 / 1000
             }
         }
+    }
+
+    /**
+     * Sets both button icon and texts based on TimerState
+     */
+    private fun setStartPauseButtonContents() {
+        setStartPauseButtonIcon()
+        setStartPauseButtonText()
     }
 
     /**
@@ -114,7 +177,7 @@ class PomodoroViewModel : ViewModel() {
             timerDuration = focusTime
         } else if (timerType == TimerType.FOCUS && currentPom == numberOfPoms) {
             timerType = TimerType.LONGBREAK
-            timerDuration = longBreakTimer
+            timerDuration = longBreakTime
         } else if (timerType == TimerType.SHORTBREAK) {
             timerType = TimerType.FOCUS
             timerDuration = focusTime
@@ -124,32 +187,51 @@ class PomodoroViewModel : ViewModel() {
 
     }
 
-    /**
-     * This method sets up the pomodoro session, setting variables for focus time,
-     * short and long break by getting these values that are stored in settings
-     */
-    fun initPomodoro() {
-        //todo connect to settings mechanisim
-        focusTime = 20000L
-        Log.d(TAG, "initPomodoro: focusTime is set to $focusTime")
-        shortBreakTime = 5000L
-        longBreakTimer = 10000L
-        numberOfPoms = 4
-        currentPom = 1
-        timerDuration = focusTime
-        pomIsInitialized = true
-
-    }
 
     /**
      * This changes the text of the start-pause button based on the TimerState
      */
-    fun setStartPauseButtonText(){
-        startPauseButtonText = when(timerState){
-            TimerState.PAUSED -> "resume"
+    fun setStartPauseButtonText() {
+        startPauseButtonText = when (timerState) {
+            TimerState.PAUSED -> "Resume"
             TimerState.STOPPED -> "Start"
             TimerState.RUNNING -> "Pause"
+            TimerState.INITIAL -> "Start"
 
+
+        }
+    }
+
+    /**
+     * This changes the text of the startpause button icon based on the TimerState
+     */
+    fun setStartPauseButtonIcon() {
+        startPauseButtonIcon = when (timerState) {
+            TimerState.PAUSED -> R.drawable.ic_play_arrow
+            TimerState.STOPPED -> R.drawable.ic_play_arrow
+            TimerState.RUNNING -> R.drawable.ic_pause
+            TimerState.INITIAL -> R.drawable.ic_play_arrow
+
+        }
+    }
+
+    /**
+     * Advance to the next timer until long rest
+     */
+    fun nextTimer() {
+        when (timerType) {
+            TimerType.FOCUS -> {
+                timerType = if (currentPom < numberOfPoms) {
+                    TimerType.SHORTBREAK
+                } else {
+                    TimerType.LONGBREAK
+                }
+            }
+            TimerType.SHORTBREAK -> {
+                timerType = TimerType.FOCUS
+                currentPom++
+            }
+            TimerType.LONGBREAK -> timerType = TimerType.INITIAL
         }
     }
 }
