@@ -9,6 +9,9 @@ import androidx.lifecycle.ViewModel
 import com.norbertblaise.taskrabbit.R
 import com.norbertblaise.taskrabbit.common.TimerState
 import com.norbertblaise.taskrabbit.common.TimerType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private const val TAG = "PomodoroViewModel"
 
@@ -66,6 +69,7 @@ class PomodoroViewModel : ViewModel() {
                 resumeTimer()
                 TimerState.RUNNING
                 setStartPauseButtonContents()
+//                CoroutineScope(Dispatchers.Default).launch {  }
 
             }
 
@@ -98,11 +102,13 @@ class PomodoroViewModel : ViewModel() {
     }
 
     /**
-     * Resets current timer back to Timer value cannot reset shortbreak and longbreak timers
+     * Resets current timer back to Timer value cannot reset shortBreak and longBreak timers
      */
     private fun resetCurrentTimer() {
         if (timerType == TimerType.FOCUS) {
-            currentTimeLeft = focusTime
+            timer.cancel()
+            setTimerDuration()
+            createTimer(timerDuration)
         }
     }
 
@@ -116,32 +122,41 @@ class PomodoroViewModel : ViewModel() {
         timer.start()
         timerState = TimerState.RUNNING
         setStartPauseButtonContents()
+
     }
 
     /**
      * Stops any running timer and resets values
      */
     fun stopTimer() {
+
         timer.cancel()
         timerState = TimerState.PAUSED
+        setStartPauseButtonContents()
     }
 
     /**
      * This stops any running timer but retains all variables
      */
     fun pauseTimer() {
-        timer.cancel()
+
     }
 
     fun resumeTimer() {
-        createTimer(currentTimeLeft)
+        timer.cancel()
+        Log.d(TAG, "resumeTimer: resuming with $currentTimeLeft time left")
+        //convert currentTimeLeft from Seconds to Millis
+        createTimer(currentTimeLeft*1000L)
         timer.start()
+        timerState = TimerState.RUNNING
+        setStartPauseButtonContents()
     }
 
     /**
      * creates a timer object with the specified duration
      */
     fun createTimer(duration: Long) {
+        Log.d(TAG, "createTimer: timer created with $duration duration")
         timer = object : CountDownTimer(duration, 1000) {
             override fun onFinish() {
                 timerState = TimerState.STOPPED
@@ -153,6 +168,7 @@ class PomodoroViewModel : ViewModel() {
             override fun onTick(p0: Long) {
                 //update label
                 currentTimeLeft = p0 / 1000
+                Log.d(TAG, "onTick: current time left is $currentTimeLeft")
             }
         }
     }
