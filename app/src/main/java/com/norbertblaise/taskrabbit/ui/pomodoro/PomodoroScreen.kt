@@ -95,7 +95,7 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
             CircularProgressBar(
                 percentage = 0.7f,
                 timerValue = viewModel.currentTimeLeft,
-                label = "Focus",
+                label = viewModel.timerLabel,
                 currentPom = viewModel.currentPom.toString(),
                 numPoms = viewModel.numberOfPoms.toString(),
                 color = Salmon500

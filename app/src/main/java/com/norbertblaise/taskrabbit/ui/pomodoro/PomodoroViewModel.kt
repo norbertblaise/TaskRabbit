@@ -24,13 +24,13 @@ class PomodoroViewModel : ViewModel() {
 
     var currentTimeLeft by mutableStateOf(0L)
     var currentPom by mutableStateOf(1)
+    var timerLabel by mutableStateOf("Focus")
     var startPauseButtonText by mutableStateOf("Start")
     var startPauseButtonIcon by mutableStateOf(R.drawable.ic_play_arrow)
 
     var timerType = TimerType.INITIAL
     var timerState = TimerState.STOPPED
     var timerDuration = 8000L// todo get initial duration from the settings
-
 
     lateinit var timer: CountDownTimer
 
@@ -47,6 +47,7 @@ class PomodoroViewModel : ViewModel() {
         numberOfPoms = 4
         currentPom = 1
         timerDuration = focusTime
+        timerLabel = "Focus"
         pomIsInitialized = true
 
     }
@@ -59,6 +60,8 @@ class PomodoroViewModel : ViewModel() {
             TimerState.STOPPED -> {
                 if (pomIsInitialized == false) {
                     initPomodoro()
+                    //set the Timer type to Focus
+                    timerType = TimerType.FOCUS
                     startTimer()
                 } else {
                     startTimer()
@@ -113,6 +116,13 @@ class PomodoroViewModel : ViewModel() {
     }
 
     /**
+     * Starts and manages a pomodoro session
+     */
+    private fun startPomodoro() {
+
+    }
+
+    /**
      * Starts a new timer of full length
      */
     fun startTimer() {
@@ -146,7 +156,7 @@ class PomodoroViewModel : ViewModel() {
         timer.cancel()
         Log.d(TAG, "resumeTimer: resuming with $currentTimeLeft time left")
         //convert currentTimeLeft from Seconds to Millis
-        createTimer(currentTimeLeft*1000L)
+        createTimer(currentTimeLeft * 1000L)
         timer.start()
         timerState = TimerState.RUNNING
         setStartPauseButtonContents()
@@ -161,8 +171,15 @@ class PomodoroViewModel : ViewModel() {
             override fun onFinish() {
                 timerState = TimerState.STOPPED
                 setStartPauseButtonContents()
-                nextTimer()
-                startTimer()
+                if (timerType == TimerType.LONGBREAK) {
+                    //stop the timer
+                    resetPomodoro()
+                } else
+                    if (currentPom <= numberOfPoms) {
+                        nextTimer()
+                        setTimerLabel()
+                        startTimer()
+                    }
             }
 
             override fun onTick(p0: Long) {
@@ -171,6 +188,12 @@ class PomodoroViewModel : ViewModel() {
                 Log.d(TAG, "onTick: current time left is $currentTimeLeft")
             }
         }
+    }
+
+    private fun resetPomodoro() {
+        timer.cancel()
+        timerType = TimerType.INITIAL
+        initPomodoro()
     }
 
     /**
@@ -188,19 +211,13 @@ class PomodoroViewModel : ViewModel() {
      *
      */
     private fun setTimerDuration() {
-        if (timerType == TimerType.INITIAL) {
-            timerType = TimerType.FOCUS
-            timerDuration = focusTime
-        } else if (timerType == TimerType.FOCUS && currentPom == numberOfPoms) {
-            timerType = TimerType.LONGBREAK
-            timerDuration = longBreakTime
-        } else if (timerType == TimerType.SHORTBREAK) {
-            timerType = TimerType.FOCUS
-            timerDuration = focusTime
-        } else if (timerType == TimerType.LONGBREAK) {
-//            timerDuration =
+        Log.d(TAG, "setTimerDuration: called")
+        when (timerType) {
+            TimerType.FOCUS -> timerDuration = focusTime
+            TimerType.SHORTBREAK -> timerDuration = shortBreakTime
+            TimerType.LONGBREAK -> timerDuration = longBreakTime
         }
-
+        Log.d(TAG, "setTimerDuration: timer duration is: $timerDuration")
     }
 
 
@@ -235,19 +252,38 @@ class PomodoroViewModel : ViewModel() {
      * Advance to the next timer until long rest
      */
     fun nextTimer() {
+        Log.d(TAG, "nextTimer: Called")
         when (timerType) {
             TimerType.FOCUS -> {
-                timerType = if (currentPom < numberOfPoms) {
-                    TimerType.SHORTBREAK
-                } else {
+
+                timerType = if (currentPom % numberOfPoms == 0) {
                     TimerType.LONGBREAK
+                } else {
+                    TimerType.SHORTBREAK
                 }
             }
             TimerType.SHORTBREAK -> {
-                timerType = TimerType.FOCUS
                 currentPom++
+                timerType = TimerType.FOCUS
             }
-            TimerType.LONGBREAK -> timerType = TimerType.INITIAL
+            TimerType.LONGBREAK -> {
+                timerType = TimerType.INITIAL
+
+
+            }
+        }
+        Log.d(TAG, "nextTimer: current timer type is $timerType")
+    }
+
+    /**
+     * Configures the label of a timer depending on the timer type
+     */
+    fun setTimerLabel() {
+        Log.d(TAG, "setTimerLabel: called")
+        when (timerType) {
+            TimerType.FOCUS -> timerLabel = "Focus"
+            TimerType.SHORTBREAK -> timerLabel = "Short Break"
+            TimerType.LONGBREAK -> timerLabel = "Long Break"
         }
     }
 }
