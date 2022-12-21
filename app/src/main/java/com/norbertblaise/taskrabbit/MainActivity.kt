@@ -22,6 +22,7 @@ import com.norbertblaise.taskrabbit.ui.pomodoro.PomodoroScreen
 import com.norbertblaise.taskrabbit.ui.settings.SettingsDetailScreen
 import com.norbertblaise.taskrabbit.ui.settings.SettingsScreen
 import com.norbertblaise.taskrabbit.ui.theme.TaskRabbitTheme
+import timber.log.Timber
 
 private const val TAG = "MainActivity"
 
@@ -31,6 +32,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             TaskRabbitApp()
         }
+        Timber.plant(Timber.DebugTree())
     }
 }
 

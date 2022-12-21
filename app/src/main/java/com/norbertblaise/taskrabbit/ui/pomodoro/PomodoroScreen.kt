@@ -1,6 +1,8 @@
 package com.norbertblaise.taskrabbit.ui.pomodoro
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.ContentAlpha.disabled
@@ -10,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -19,8 +22,16 @@ import com.norbertblaise.taskrabbit.ui.theme.Grey
 import com.norbertblaise.taskrabbit.ui.theme.Ink
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.norbertblaise.taskrabbit.common.TimerType
+import timber.log.Timber
+import java.security.AccessController
 
 private const val TAG = "PomodoroScreen"
+
+fun showToast(context: Context) {
+    Toast.makeText(context, "Only breaks can be skipped", Toast.LENGTH_LONG).show()
+    Timber.d("$TAG showToast: called")
+}
 
 @Composable
 fun PomodoroScreen(
@@ -76,6 +87,7 @@ fun PomodoroScreenAppBar(
 
 @Composable
 fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
+    val mContext = LocalContext.current
     Column(
 
         modifier = Modifier
@@ -123,7 +135,7 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
             Spacer(modifier = Modifier.width(8.dp))
             ExtendedFloatingActionButton(
                 onClick = {
-                    Log.d(TAG, "PomodoroScreenBody: startbutton clicked")/*TODO*/
+                    Timber.d( "PomodoroScreenBody: startbutton clicked")/*TODO*/
                     viewModel.onStartStopButtonClick()
                 },
                 icon = {
@@ -139,7 +151,15 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
             )
             Spacer(modifier = Modifier.width(8.dp))
             FloatingActionButton(
-                onClick = { /*TODO*/ },
+                onClick = {
+//                    showToast(mContext)
+
+                    if (viewModel.timerType == TimerType.FOCUS) {
+                        showToast(mContext)
+                    }else{
+                        //show AlertDialog
+                    }
+                },
                 modifier = Modifier
                     .size(40.dp),
                 backgroundColor = Grey,

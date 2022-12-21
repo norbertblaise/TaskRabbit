@@ -1,7 +1,9 @@
 package com.norbertblaise.taskrabbit.ui.pomodoro
 
+import android.content.Context
 import android.os.CountDownTimer
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,6 +14,8 @@ import com.norbertblaise.taskrabbit.common.TimerType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import java.security.AccessController.getContext
 
 private const val TAG = "PomodoroViewModel"
 
@@ -38,10 +42,10 @@ class PomodoroViewModel : ViewModel() {
      * This method sets up the pomodoro session, setting variables for focus time,
      * short and long break by getting these values that are stored in settings
      */
-    fun initPomodoro() {
+    private fun initPomodoro() {
         //todo connect to settings mechanisim
         focusTime = 20000L
-        Log.d(TAG, "initPomodoro: focusTime is set to $focusTime")
+        Timber.d("$TAG initPomodoro: focusTime is set to $focusTime")
         shortBreakTime = 5000L
         longBreakTime = 10000L
         numberOfPoms = 4
@@ -66,16 +70,13 @@ class PomodoroViewModel : ViewModel() {
                 } else {
                     startTimer()
                 }
-
             }//todo start timer
             TimerState.PAUSED -> {
                 resumeTimer()
                 TimerState.RUNNING
                 setStartPauseButtonContents()
 //                CoroutineScope(Dispatchers.Default).launch {  }
-
             }
-
             else -> {
                 stopTimer()
                 setStartPauseButtonContents()
@@ -105,6 +106,15 @@ class PomodoroViewModel : ViewModel() {
     }
 
     /**
+     * Handles clicks on skip button. It only allows Breaks to be skipped. it displays a toast to tell the user this
+     * and will prompt the user if they really want to skip a break by displaying an AlertDialog
+     */
+    fun onSkipButtonClick(){
+        if(timerType == TimerType.FOCUS){
+        }
+    }
+
+    /**
      * Resets current timer back to Timer value cannot reset shortBreak and longBreak timers
      */
     private fun resetCurrentTimer() {
@@ -113,13 +123,6 @@ class PomodoroViewModel : ViewModel() {
             setTimerDuration()
             createTimer(timerDuration)
         }
-    }
-
-    /**
-     * Starts and manages a pomodoro session
-     */
-    private fun startPomodoro() {
-
     }
 
     /**
@@ -132,14 +135,12 @@ class PomodoroViewModel : ViewModel() {
         timer.start()
         timerState = TimerState.RUNNING
         setStartPauseButtonContents()
-
     }
 
     /**
      * Stops any running timer and resets values
      */
-    fun stopTimer() {
-
+    private fun stopTimer() {
         timer.cancel()
         timerState = TimerState.PAUSED
         setStartPauseButtonContents()
@@ -152,9 +153,9 @@ class PomodoroViewModel : ViewModel() {
 
     }
 
-    fun resumeTimer() {
+    private fun resumeTimer() {
         timer.cancel()
-        Log.d(TAG, "resumeTimer: resuming with $currentTimeLeft time left")
+        Timber.d("$TAG resumeTimer: resuming with $currentTimeLeft time left")
         //convert currentTimeLeft from Seconds to Millis
         createTimer(currentTimeLeft * 1000L)
         timer.start()
@@ -165,8 +166,8 @@ class PomodoroViewModel : ViewModel() {
     /**
      * creates a timer object with the specified duration
      */
-    fun createTimer(duration: Long) {
-        Log.d(TAG, "createTimer: timer created with $duration duration")
+    private fun createTimer(duration: Long) {
+        Timber.d("$TAG createTimer: timer created with $duration duration")
         timer = object : CountDownTimer(duration, 1000) {
             override fun onFinish() {
                 timerState = TimerState.STOPPED
@@ -185,11 +186,14 @@ class PomodoroViewModel : ViewModel() {
             override fun onTick(p0: Long) {
                 //update label
                 currentTimeLeft = p0 / 1000
-                Log.d(TAG, "onTick: current time left is $currentTimeLeft")
+                    Timber.d("$TAG onTick: current time left is $currentTimeLeft")
             }
         }
     }
 
+    /**
+     * resets pomodoro values to original and resets UI values to initial
+     */
     private fun resetPomodoro() {
         timer.cancel()
         timerType = TimerType.INITIAL
@@ -211,20 +215,20 @@ class PomodoroViewModel : ViewModel() {
      *
      */
     private fun setTimerDuration() {
-        Log.d(TAG, "setTimerDuration: called")
+        Timber.d("$TAG setTimerDuration: called")
         when (timerType) {
             TimerType.FOCUS -> timerDuration = focusTime
             TimerType.SHORTBREAK -> timerDuration = shortBreakTime
             TimerType.LONGBREAK -> timerDuration = longBreakTime
         }
-        Log.d(TAG, "setTimerDuration: timer duration is: $timerDuration")
+            Timber.d("$TAG setTimerDuration: timer duration is: $timerDuration")
     }
 
 
     /**
      * This changes the text of the start-pause button based on the TimerState
      */
-    fun setStartPauseButtonText() {
+    private fun setStartPauseButtonText() {
         startPauseButtonText = when (timerState) {
             TimerState.PAUSED -> "Resume"
             TimerState.STOPPED -> "Start"
@@ -238,7 +242,7 @@ class PomodoroViewModel : ViewModel() {
     /**
      * This changes the text of the startpause button icon based on the TimerState
      */
-    fun setStartPauseButtonIcon() {
+    private fun setStartPauseButtonIcon() {
         startPauseButtonIcon = when (timerState) {
             TimerState.PAUSED -> R.drawable.ic_play_arrow
             TimerState.STOPPED -> R.drawable.ic_play_arrow
@@ -251,8 +255,8 @@ class PomodoroViewModel : ViewModel() {
     /**
      * Advance to the next timer until long rest
      */
-    fun nextTimer() {
-        Log.d(TAG, "nextTimer: Called")
+    private fun nextTimer() {
+        Timber.d("$TAG nextTimer: Called")
         when (timerType) {
             TimerType.FOCUS -> {
 
@@ -272,14 +276,14 @@ class PomodoroViewModel : ViewModel() {
 
             }
         }
-        Log.d(TAG, "nextTimer: current timer type is $timerType")
+            Timber.d("$TAG nextTimer: current timer type is $timerType")
     }
 
     /**
      * Configures the label of a timer depending on the timer type
      */
     fun setTimerLabel() {
-        Log.d(TAG, "setTimerLabel: called")
+        Timber.d("$TAG setTimerLabel: called")
         when (timerType) {
             TimerType.FOCUS -> timerLabel = "Focus"
             TimerType.SHORTBREAK -> timerLabel = "Short Break"
