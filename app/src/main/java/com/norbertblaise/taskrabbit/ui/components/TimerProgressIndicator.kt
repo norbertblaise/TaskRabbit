@@ -25,7 +25,8 @@ import timber.log.Timber
 
 
 fun formatTime(timeInLong: Long): String {
-    return DateUtils.formatElapsedTime(timeInLong)
+    return DateUtils.formatElapsedTime(timeInLong/1000)
+
 }
 
 @Composable

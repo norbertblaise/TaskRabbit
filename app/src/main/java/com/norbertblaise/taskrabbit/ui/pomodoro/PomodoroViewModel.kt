@@ -150,7 +150,7 @@ class PomodoroViewModel : ViewModel() {
         timer.cancel()
         Timber.d("$TAG resumeTimer: resuming with $currentTimeLeftInMillis time left")
         //convert currentTimeLeft from Seconds to Millis
-        createTimer(currentTimeLeftInMillis * 1000L)
+        createTimer(currentTimeLeftInMillis)
         timer.start()
         timerState = TimerState.RUNNING
         setStartPauseButtonContents()
@@ -183,6 +183,7 @@ class PomodoroViewModel : ViewModel() {
                 //update time left in seconds every 1000 milliseconds
                 if (p0 % 1000 == 0L) {
                     currentTimeLeftInSeconds = currentTimeLeftInMillis / 1000
+                    Timber.d("onTick: currentTimeLeftInSeconds is $currentTimeLeftInSeconds")
                 }
                 calculatePercentageTimeLeft()
 
@@ -323,9 +324,6 @@ class PomodoroViewModel : ViewModel() {
         currentTimeLeftInPercentage = currentTimeLeftInMillis.toFloat() / (timerDuration)
     }
 
-    fun updateTimeLeftEveryMilli() {
-
-    }
 
     /**
      * Sets progress indicator color based on the TimerType

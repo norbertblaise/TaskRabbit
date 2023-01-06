@@ -83,10 +83,6 @@ fun PomodoroScreenAppBar(
 fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
     val mContext = LocalContext.current
     val openDialog = remember { mutableStateOf(false) }
-    val timeLeftInPercent =
-        (viewModel.currentTimeLeftInMillis / (viewModel.timerDuration) / 1000) * 100.toFloat()
-
-    Timber.d("Current time in percentage is $timeLeftInPercent")
     Column(
 
         modifier = Modifier
@@ -108,13 +104,13 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Timber.d("Pomodoro Screen, Time left in percent is $timeLeftInPercent")
-            Timber.d("Pomodoro Screen, Time left in percent  from viewmodel is ${viewModel.currentTimeLeftInPercentage.toFloat()}")
+//            Timber.d("Pomodoro Screen, Time left in percent is $timeLeftInPercent")
+//            Timber.d("Pomodoro Screen, Time left in percent  from viewmodel is ${viewModel.currentTimeLeftInPercentage.toFloat()}")
 
             TimerProgressIndicator(
                 percentage = viewModel.currentTimeLeftInPercentage.toFloat(),
                 initialTimerValue = viewModel.timerDuration,
-                timeLeft = viewModel.currentTimeLeftInSeconds,
+                timeLeft = viewModel.currentTimeLeftInMillis,
                 label = viewModel.timerLabel,
                 currentPom = viewModel.currentPom.toString(),
                 numPoms = viewModel.numberOfPoms.toString(),
