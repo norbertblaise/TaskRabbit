@@ -1,14 +1,12 @@
 package com.norbertblaise.taskrabbit.ui.pomodoro
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.ContentAlpha.disabled
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,14 +15,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.norbertblaise.taskrabbit.R
-import com.norbertblaise.taskrabbit.ui.components.CircularProgressBar
+import com.norbertblaise.taskrabbit.ui.components.TimerProgressIndicator
 import com.norbertblaise.taskrabbit.ui.theme.Grey
 import com.norbertblaise.taskrabbit.ui.theme.Ink
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.norbertblaise.taskrabbit.common.TimerType
 import timber.log.Timber
-import java.security.AccessController
+
 
 private const val TAG = "PomodoroScreen"
 
@@ -50,11 +48,7 @@ fun PomodoroScreen(
         content = {
             PomodoroScreenBody(viewModel = viewModel)
         }
-
-
     )
-
-
 }
 
 @Composable
@@ -88,12 +82,22 @@ fun PomodoroScreenAppBar(
 @Composable
 fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
     val mContext = LocalContext.current
+    val openDialog = remember { mutableStateOf(false) }
+    val timeLeftInPercent =
+        (viewModel.currentTimeLeftInMillis / (viewModel.timerDuration) / 1000) * 100.toFloat()
+
+    Timber.d("Current time in percentage is $timeLeftInPercent")
     Column(
 
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
+        ShowAlertDialog(
+            show = viewModel.showDialog,
+            onDismiss = viewModel::onDialogDismiss,
+            onConfirm = viewModel::onDialogConfirm
+        )
         Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = "Task Rabbit",
@@ -104,13 +108,17 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
-            CircularProgressBar(
-                percentage = 0.7f,
-                timerValue = viewModel.currentTimeLeft,
+            Timber.d("Pomodoro Screen, Time left in percent is $timeLeftInPercent")
+            Timber.d("Pomodoro Screen, Time left in percent  from viewmodel is ${viewModel.currentTimeLeftInPercentage.toFloat()}")
+
+            TimerProgressIndicator(
+                percentage = viewModel.currentTimeLeftInPercentage.toFloat(),
+                initialTimerValue = viewModel.timerDuration,
+                timeLeft = viewModel.currentTimeLeftInSeconds,
                 label = viewModel.timerLabel,
                 currentPom = viewModel.currentPom.toString(),
                 numPoms = viewModel.numberOfPoms.toString(),
-                color = Salmon500
+                color = viewModel.indicatorColour
             )
         }
         Spacer(modifier = Modifier.height(70.dp))
@@ -135,7 +143,7 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
             Spacer(modifier = Modifier.width(8.dp))
             ExtendedFloatingActionButton(
                 onClick = {
-                    Timber.d( "PomodoroScreenBody: startbutton clicked")/*TODO*/
+                    Timber.d("PomodoroScreenBody: startbutton clicked")/*TODO*/
                     viewModel.onStartStopButtonClick()
                 },
                 icon = {
@@ -152,12 +160,10 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
             Spacer(modifier = Modifier.width(8.dp))
             FloatingActionButton(
                 onClick = {
-//                    showToast(mContext)
-
                     if (viewModel.timerType == TimerType.FOCUS) {
                         showToast(mContext)
-                    }else{
-                        //show AlertDialog
+                    } else if (viewModel.timerType == TimerType.SHORTBREAK || viewModel.timerType == TimerType.LONGBREAK) {
+                        viewModel.showDialog = true
                     }
                 },
                 modifier = Modifier
@@ -175,6 +181,49 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
     }
 }
 
+@Composable
+fun ShowAlertDialog(
+    show: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    if (show) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text("Skip Rest")
+
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = onConfirm,
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = Salmon500,
+                        backgroundColor = Color.Transparent
+                    )
+
+                ) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = Salmon500,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("No")
+                }
+            },
+
+            text = {
+                Text("Are you sure you want to skip rest?")
+            }
+        )
+    }
+}
 
 @Preview(showBackground = true)
 @Composable

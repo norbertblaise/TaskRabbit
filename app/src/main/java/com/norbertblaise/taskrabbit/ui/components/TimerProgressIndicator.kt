@@ -1,21 +1,16 @@
 package com.norbertblaise.taskrabbit.ui.components
 
-import android.os.Build
 import android.text.format.DateUtils
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
 
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -26,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.norbertblaise.taskrabbit.ui.theme.Grey
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
-import java.time.format.DateTimeFormatter
+import timber.log.Timber
 
 
 fun formatTime(timeInLong: Long): String {
@@ -34,19 +29,25 @@ fun formatTime(timeInLong: Long): String {
 }
 
 @Composable
-fun CircularProgressBar(
+fun TimerProgressIndicator(
     percentage: Float,
-    timerValue: Long,
+    initialTimerValue: Long =0L,
+    timeLeft: Long,
     label: String,
     currentPom: String,
     numPoms: String,
+//    isTimerRunning: Boolean?,
     radius: Dp = 320.dp,
     color: Color,
 
 
     ) {
-    val currPercentage = animateFloatAsState(
-        targetValue = percentage,
+    var value by remember {
+        mutableStateOf(percentage)
+    }
+    Timber.d("TimerProgressIndicator: value is $value")
+    var currPercentage = animateFloatAsState(
+        targetValue = value,
         animationSpec = tween(durationMillis = 1000, delayMillis = 0)
     )
     Box(
@@ -72,7 +73,7 @@ fun CircularProgressBar(
 
                     color = color,
                     startAngle = -90f,
-                    sweepAngle = 360 * currPercentage.value,
+                    sweepAngle = -360f * percentage,
                     useCenter = false,
                     style = Stroke(30.dp.toPx(), cap = StrokeCap.Round),
                     size = Size(size.width, size.height)
@@ -88,7 +89,7 @@ fun CircularProgressBar(
 
                 )
             Text(
-                text = formatTime(timerValue),
+                text = formatTime(timeLeft),
                 style = MaterialTheme.typography.h1
             )
             Text(
@@ -105,12 +106,14 @@ fun CircularProgressBar(
 @Preview(showBackground = true)
 @Composable
 fun CircularProgressBarPreview() {
-    CircularProgressBar(
+    TimerProgressIndicator(
         percentage = 0.5f,
-        timerValue = 1000L,
+        initialTimerValue = 1000L,
+        timeLeft = 1000L,
         label = "Focus",
         currentPom = "2",
         numPoms = "4",
+//        isTimerRunning = false,
         color = Salmon500
     )
 }

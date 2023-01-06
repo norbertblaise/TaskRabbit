@@ -3,7 +3,7 @@ package com.norbertblaise.taskrabbit.ui.theme
 import androidx.compose.ui.graphics.Color
 
 val Charcoal = Color(0xFF324A5F)
-val Darkblue = Color(0xFF1B2A41)
+val DarkBlue = Color(0xFF1B2A41)
 val Ink = Color(0xFF0C1821)
 val Salmon100 = Color(0xFFFFF3F3)
 val Salmon500 = Color(0xFFF15156)

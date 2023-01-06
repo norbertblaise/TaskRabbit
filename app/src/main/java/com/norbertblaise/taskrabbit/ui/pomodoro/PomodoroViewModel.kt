@@ -1,9 +1,6 @@
 package com.norbertblaise.taskrabbit.ui.pomodoro
 
-import android.content.Context
 import android.os.CountDownTimer
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,11 +8,11 @@ import androidx.lifecycle.ViewModel
 import com.norbertblaise.taskrabbit.R
 import com.norbertblaise.taskrabbit.common.TimerState
 import com.norbertblaise.taskrabbit.common.TimerType
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.norbertblaise.taskrabbit.ui.theme.DarkBlue
+import com.norbertblaise.taskrabbit.ui.theme.DarkCyan
+import com.norbertblaise.taskrabbit.ui.theme.Navy
+import com.norbertblaise.taskrabbit.ui.theme.Salmon500
 import timber.log.Timber
-import java.security.AccessController.getContext
 
 private const val TAG = "PomodoroViewModel"
 
@@ -26,7 +23,8 @@ class PomodoroViewModel : ViewModel() {
     var longBreakTime = 3000L
     var numberOfPoms = 4
 
-    var currentTimeLeft by mutableStateOf(0L)
+    var indicatorColour by mutableStateOf(Salmon500)
+    var currentTimeLeftInMillis by mutableStateOf(0L)
     var currentPom by mutableStateOf(1)
     var timerLabel by mutableStateOf("Focus")
     var startPauseButtonText by mutableStateOf("Start")
@@ -35,8 +33,12 @@ class PomodoroViewModel : ViewModel() {
     var timerType = TimerType.INITIAL
     var timerState = TimerState.STOPPED
     var timerDuration = 8000L// todo get initial duration from the settings
-
+    var currentTimeLeftInPercentage by mutableStateOf(1.0f)
+    var currentTimeLeftInSeconds by mutableStateOf(0L)
     lateinit var timer: CountDownTimer
+
+    var showDialog by mutableStateOf(false)
+
 
     /**
      * This method sets up the pomodoro session, setting variables for focus time,
@@ -106,15 +108,6 @@ class PomodoroViewModel : ViewModel() {
     }
 
     /**
-     * Handles clicks on skip button. It only allows Breaks to be skipped. it displays a toast to tell the user this
-     * and will prompt the user if they really want to skip a break by displaying an AlertDialog
-     */
-    fun onSkipButtonClick(){
-        if(timerType == TimerType.FOCUS){
-        }
-    }
-
-    /**
      * Resets current timer back to Timer value cannot reset shortBreak and longBreak timers
      */
     private fun resetCurrentTimer() {
@@ -155,9 +148,9 @@ class PomodoroViewModel : ViewModel() {
 
     private fun resumeTimer() {
         timer.cancel()
-        Timber.d("$TAG resumeTimer: resuming with $currentTimeLeft time left")
+        Timber.d("$TAG resumeTimer: resuming with $currentTimeLeftInMillis time left")
         //convert currentTimeLeft from Seconds to Millis
-        createTimer(currentTimeLeft * 1000L)
+        createTimer(currentTimeLeftInMillis * 1000L)
         timer.start()
         timerState = TimerState.RUNNING
         setStartPauseButtonContents()
@@ -168,7 +161,7 @@ class PomodoroViewModel : ViewModel() {
      */
     private fun createTimer(duration: Long) {
         Timber.d("$TAG createTimer: timer created with $duration duration")
-        timer = object : CountDownTimer(duration, 1000) {
+        timer = object : CountDownTimer(duration, 1) {
             override fun onFinish() {
                 timerState = TimerState.STOPPED
                 setStartPauseButtonContents()
@@ -179,14 +172,20 @@ class PomodoroViewModel : ViewModel() {
                     if (currentPom <= numberOfPoms) {
                         nextTimer()
                         setTimerLabel()
+                        setIndicatorColor()
                         startTimer()
                     }
             }
 
             override fun onTick(p0: Long) {
                 //update label
-                currentTimeLeft = p0 / 1000
-                    Timber.d("$TAG onTick: current time left is $currentTimeLeft")
+                currentTimeLeftInMillis = p0
+                //update time left in seconds every 1000 milliseconds
+                if (p0 % 1000 == 0L) {
+                    currentTimeLeftInSeconds = currentTimeLeftInMillis / 1000
+                }
+                calculatePercentageTimeLeft()
+
             }
         }
     }
@@ -221,7 +220,7 @@ class PomodoroViewModel : ViewModel() {
             TimerType.SHORTBREAK -> timerDuration = shortBreakTime
             TimerType.LONGBREAK -> timerDuration = longBreakTime
         }
-            Timber.d("$TAG setTimerDuration: timer duration is: $timerDuration")
+        Timber.d("$TAG setTimerDuration: timer duration is: $timerDuration")
     }
 
 
@@ -276,7 +275,7 @@ class PomodoroViewModel : ViewModel() {
 
             }
         }
-            Timber.d("$TAG nextTimer: current timer type is $timerType")
+        Timber.d("$TAG nextTimer: current timer type is $timerType")
     }
 
     /**
@@ -290,4 +289,54 @@ class PomodoroViewModel : ViewModel() {
             TimerType.LONGBREAK -> timerLabel = "Long Break"
         }
     }
+
+    /**
+     * Handles clicks on skip button. It only allows Breaks to be skipped. it displays a toast to tell the user this
+     * and will prompt the user if they really want to skip a break by displaying an AlertDialog
+     */
+    fun onSkipButtonClick() {
+        showDialog = true
+    }
+
+    /**
+     * Handles confirm button press
+     */
+    fun onDialogConfirm() {
+        showDialog = false
+        //skip current timer
+        if (timerType == TimerType.SHORTBREAK || timerType == TimerType.LONGBREAK) {
+            timer.onFinish()
+        }
+    }
+
+    /**
+     * Dismisses Skip Rest Dialog
+     */
+    fun onDialogDismiss() {
+        showDialog = false
+    }
+
+    /**
+     * Calculates the time left in percent
+     */
+    fun calculatePercentageTimeLeft() {
+        currentTimeLeftInPercentage = currentTimeLeftInMillis.toFloat() / (timerDuration)
+    }
+
+    fun updateTimeLeftEveryMilli() {
+
+    }
+
+    /**
+     * Sets progress indicator color based on the TimerType
+     */
+    fun setIndicatorColor() {
+        indicatorColour = when (timerType) {
+            TimerType.FOCUS -> Salmon500
+            TimerType.INITIAL -> Salmon500
+            TimerType.SHORTBREAK -> DarkCyan
+            TimerType.LONGBREAK -> DarkCyan
+        }
+    }
+
 }
