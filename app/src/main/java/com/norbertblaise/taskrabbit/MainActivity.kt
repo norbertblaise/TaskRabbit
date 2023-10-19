@@ -11,28 +11,35 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.norbertblaise.taskrabbit.common.DataStoreManager
 import com.norbertblaise.taskrabbit.ui.pomodoro.PomodoroScreen
 import com.norbertblaise.taskrabbit.ui.settings.SettingsDetailScreen
 import com.norbertblaise.taskrabbit.ui.settings.SettingsScreen
 import com.norbertblaise.taskrabbit.ui.theme.TaskRabbitTheme
+import logcat.AndroidLogcatLogger
+import logcat.LogPriority
 import timber.log.Timber
 
 private const val TAG = "MainActivity"
 
 class MainActivity : ComponentActivity() {
+    lateinit var dataStoreManager: DataStoreManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             TaskRabbitApp()
         }
+       //init settings
+        dataStoreManager = DataStoreManager(this@MainActivity)
         Timber.plant(Timber.DebugTree())
+        AndroidLogcatLogger.installOnDebuggableApp(application, minPriority = LogPriority.VERBOSE)
+
     }
 }
 

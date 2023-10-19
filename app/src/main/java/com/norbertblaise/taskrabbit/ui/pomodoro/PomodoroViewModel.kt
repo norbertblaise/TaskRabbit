@@ -6,18 +6,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.norbertblaise.taskrabbit.R
+import com.norbertblaise.taskrabbit.common.DataStoreManager
 import com.norbertblaise.taskrabbit.common.TimerState
 import com.norbertblaise.taskrabbit.common.TimerType
-import com.norbertblaise.taskrabbit.ui.theme.DarkBlue
 import com.norbertblaise.taskrabbit.ui.theme.DarkCyan
-import com.norbertblaise.taskrabbit.ui.theme.Navy
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
 import timber.log.Timber
 
 private const val TAG = "PomodoroViewModel"
 
-class PomodoroViewModel : ViewModel() {
+class PomodoroViewModel(private val dataStoreManager: DataStoreManager? =null) : ViewModel() {
+    private val timerPreferences = dataStoreManager?.timerPreferences
+//    var focusTimeFlow = timerPreferences.map { it.focusTime }
     var pomIsInitialized = false
+//    var focusTime = focusTimeFlow
+//    var shortBreakTime = timerPreferences.map { it.shortBreak }
+//    var longBreakTime = timerPreferences.map { it.longBreak }
+//    var numberOfPoms = timerPreferences.map { it.longBreakInterval }
     var focusTime = 5000L
     var shortBreakTime = 2000L
     var longBreakTime = 3000L
@@ -104,6 +109,9 @@ class PomodoroViewModel : ViewModel() {
                 //do nothing
             }
 
+            else -> {
+                //no-op
+            }
         }
     }
 
@@ -220,6 +228,9 @@ class PomodoroViewModel : ViewModel() {
             TimerType.FOCUS -> timerDuration = focusTime
             TimerType.SHORTBREAK -> timerDuration = shortBreakTime
             TimerType.LONGBREAK -> timerDuration = longBreakTime
+            else -> {
+                //no-op
+            }
         }
         Timber.d("$TAG setTimerDuration: timer duration is: $timerDuration")
     }
@@ -275,6 +286,9 @@ class PomodoroViewModel : ViewModel() {
 
 
             }
+            else -> {
+                //no-op
+            }
         }
         Timber.d("$TAG nextTimer: current timer type is $timerType")
     }
@@ -288,6 +302,9 @@ class PomodoroViewModel : ViewModel() {
             TimerType.FOCUS -> timerLabel = "Focus"
             TimerType.SHORTBREAK -> timerLabel = "Short Break"
             TimerType.LONGBREAK -> timerLabel = "Long Break"
+            else -> {
+                //no-op
+            }
         }
     }
 

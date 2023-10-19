@@ -1,5 +1,6 @@
 package com.norbertblaise.taskrabbit.ui.pomodoro
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -14,13 +15,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.norbertblaise.taskrabbit.R
+import com.norbertblaise.taskrabbit.common.TimerType
 import com.norbertblaise.taskrabbit.ui.components.TimerProgressIndicator
 import com.norbertblaise.taskrabbit.ui.theme.Grey
 import com.norbertblaise.taskrabbit.ui.theme.Ink
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.norbertblaise.taskrabbit.common.TimerType
 import timber.log.Timber
 
 
@@ -31,6 +32,7 @@ fun showToast(context: Context) {
     Timber.d("$TAG showToast: called")
 }
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun PomodoroScreen(
     viewModel: PomodoroViewModel = viewModel(),
