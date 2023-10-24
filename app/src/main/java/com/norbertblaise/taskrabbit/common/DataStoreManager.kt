@@ -7,7 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.norbertblaise.taskrabbit.models.Settings
+import com.norbertblaise.taskrabbit.models.SettingsModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -41,14 +41,14 @@ class DataStoreManager(val context: Context) {
         val NUM_OF_POMS = intPreferencesKey("NUM_OF_POMS")
     }
 
-    val timerPreferences: Flow<Settings> = context.settingsPreferencesDataStore.data
+    val timerPreferences: Flow<SettingsModel> = context.settingsPreferencesDataStore.data
         .catch { exception ->
             if (exception is IOException) {
                 logcat { exception.asLog() }
                 emit(emptyPreferences())
             }
         }.map {
-            Settings(
+            SettingsModel(
                 focusTime = it[PreferencesKeys.FOCUS_TIME] ?: FOCUS_TIME_DEFAULT,
                 shortBreak = it[PreferencesKeys.SHORT_BREAK_TIME] ?: SHORT_BREAK_TIME_DEFAULT,
                 longBreak = it[PreferencesKeys.LONG_BREAK_TIME] ?: LONG_BREAK_TIME_DEFAULT,
@@ -93,7 +93,7 @@ class DataStoreManager(val context: Context) {
         }
     }
 
-    suspend fun saveToDataStore(settings: Settings) {
+    suspend fun saveToDataStore(settings: SettingsModel) {
         context.settingsPreferencesDataStore.edit {
             it[FOCUS_TIME] = settings.focusTime
             it[SHORT_BREAK_TIME] = settings.shortBreak
@@ -104,7 +104,7 @@ class DataStoreManager(val context: Context) {
     }
 
     suspend fun getFromDataStore() = context.settingsPreferencesDataStore.data.map {
-        Settings(
+        SettingsModel(
             focusTime = it[FOCUS_TIME] ?: 0,
             shortBreak = it[SHORT_BREAK_TIME] ?: 0,
             longBreak = it[LONG_BREAK_TIME] ?: 0,

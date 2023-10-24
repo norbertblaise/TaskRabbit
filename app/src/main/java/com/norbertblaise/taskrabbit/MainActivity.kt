@@ -11,6 +11,7 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -18,10 +19,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.norbertblaise.taskrabbit.common.DataStoreManager
+import com.norbertblaise.taskrabbit.models.SettingsModel
 import com.norbertblaise.taskrabbit.ui.pomodoro.PomodoroScreen
 import com.norbertblaise.taskrabbit.ui.settings.SettingsDetailScreen
 import com.norbertblaise.taskrabbit.ui.settings.SettingsScreen
 import com.norbertblaise.taskrabbit.ui.theme.TaskRabbitTheme
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.launch
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 import timber.log.Timber
@@ -29,17 +33,44 @@ import timber.log.Timber
 private const val TAG = "MainActivity"
 
 class MainActivity : ComponentActivity() {
-    lateinit var dataStoreManager: DataStoreManager
+    private lateinit var dataStoreManager: DataStoreManager
+    private var storeEmpty: Boolean = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             TaskRabbitApp()
         }
-       //init settings
+        //init settings
         dataStoreManager = DataStoreManager(this@MainActivity)
+        //check if datastore is empty or not
+        lifecycleScope.launch {
+            dataStoreManager.getFromDataStore().catch {
+                it.printStackTrace()
+            }.collect {
+                if (it.focusTime <= 0) {
+                    storeEmpty = true
+                }
+            }
+        }
+        //populate datastore with default data
+        if (storeEmpty) {
+            initSettings()
+        }
         Timber.plant(Timber.DebugTree())
         AndroidLogcatLogger.installOnDebuggableApp(application, minPriority = LogPriority.VERBOSE)
 
+    }
+
+    private fun initSettings() {
+        val defaultSettings = SettingsModel(
+            focusTime = 25,
+            shortBreak = 5,
+            longBreak = 20,
+            longBreakInterval = 4
+        )
+        lifecycleScope.launch {
+            dataStoreManager.saveToDataStore(defaultSettings)
+        }
     }
 }
 

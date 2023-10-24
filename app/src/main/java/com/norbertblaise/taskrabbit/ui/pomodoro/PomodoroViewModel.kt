@@ -5,21 +5,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.norbertblaise.taskrabbit.R
 import com.norbertblaise.taskrabbit.common.DataStoreManager
 import com.norbertblaise.taskrabbit.common.TimerState
 import com.norbertblaise.taskrabbit.common.TimerType
+import com.norbertblaise.taskrabbit.models.SettingsModel
 import com.norbertblaise.taskrabbit.ui.theme.DarkCyan
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 private const val TAG = "PomodoroViewModel"
 
-class PomodoroViewModel(private val dataStoreManager: DataStoreManager? =null) : ViewModel() {
+class PomodoroViewModel(private val dataStoreManager: DataStoreManager? = null) : ViewModel() {
     private val timerPreferences = dataStoreManager?.timerPreferences
-//    var focusTimeFlow = timerPreferences.map { it.focusTime }
+
+    //    var focusTimeFlow = timerPreferences.map { it.focusTime }
     var pomIsInitialized = false
-//    var focusTime = focusTimeFlow
+
+    //    var focusTime = focusTimeFlow
 //    var shortBreakTime = timerPreferences.map { it.shortBreak }
 //    var longBreakTime = timerPreferences.map { it.longBreak }
 //    var numberOfPoms = timerPreferences.map { it.longBreakInterval }
@@ -27,6 +33,7 @@ class PomodoroViewModel(private val dataStoreManager: DataStoreManager? =null) :
     var shortBreakTime = 2000L
     var longBreakTime = 3000L
     var numberOfPoms = 4
+    lateinit var settings: SettingsModel
 
     var indicatorColour by mutableStateOf(Salmon500)
     var currentTimeLeftInMillis by mutableStateOf(0L)
@@ -44,6 +51,32 @@ class PomodoroViewModel(private val dataStoreManager: DataStoreManager? =null) :
 
     var showDialog by mutableStateOf(false)
 
+    init {
+        settings = SettingsModel()
+
+        //set up pomodoro parameters based on the contents of the datastore
+        viewModelScope.launch {
+            dataStoreManager?.getFromDataStore()?.catch { e ->
+                e.printStackTrace()
+            }?.collect {
+                settings = SettingsModel(
+                    focusTime = it.focusTime,
+                    shortBreak = it.shortBreak,
+                    longBreak = it.longBreak,
+                    longBreakInterval = it.longBreakInterval
+                )
+            }
+            if (settings.focusTime > 0) {
+                focusTime = settings.focusTime.toLong() * 1000 * 60 // convert to millis
+                shortBreakTime = settings.shortBreak.toLong() * 1000 * 60 //convert to millis
+                longBreakTime = settings.longBreak.toLong() * 1000 * 60 //convert to millis
+                numberOfPoms = settings.longBreakInterval
+            } else {
+                //show some error
+            }
+
+        }
+    }
 
     /**
      * This method sets up the pomodoro session, setting variables for focus time,
@@ -51,15 +84,16 @@ class PomodoroViewModel(private val dataStoreManager: DataStoreManager? =null) :
      */
     private fun initPomodoro() {
         //todo connect to settings mechanisim
-        focusTime = 20000L
+        focusTime = (settings.focusTime * 1000 * 60).toLong()
         Timber.d("$TAG initPomodoro: focusTime is set to $focusTime")
-        shortBreakTime = 5000L
-        longBreakTime = 10000L
-        numberOfPoms = 4
+        shortBreakTime = (settings.shortBreak * 1000 * 60).toLong()
+        longBreakTime = (settings.longBreak * 1000 * 60).toLong()
+        numberOfPoms = settings.longBreakInterval
         currentPom = 1
         timerDuration = focusTime
         timerLabel = "Focus"
         pomIsInitialized = true
+
 
     }
 
@@ -84,6 +118,7 @@ class PomodoroViewModel(private val dataStoreManager: DataStoreManager? =null) :
                 setStartPauseButtonContents()
 //                CoroutineScope(Dispatchers.Default).launch {  }
             }
+
             else -> {
                 stopTimer()
                 setStartPauseButtonContents()
@@ -100,11 +135,13 @@ class PomodoroViewModel(private val dataStoreManager: DataStoreManager? =null) :
             TimerState.PAUSED -> {
                 resetCurrentTimer()
             }
+
             TimerState.RUNNING -> {
                 stopTimer()
                 resetCurrentTimer()
                 startTimer()
             }
+
             TimerState.STOPPED -> {
                 //do nothing
             }
@@ -277,15 +314,18 @@ class PomodoroViewModel(private val dataStoreManager: DataStoreManager? =null) :
                     TimerType.SHORTBREAK
                 }
             }
+
             TimerType.SHORTBREAK -> {
                 currentPom++
                 timerType = TimerType.FOCUS
             }
+
             TimerType.LONGBREAK -> {
                 timerType = TimerType.INITIAL
 
 
             }
+
             else -> {
                 //no-op
             }
