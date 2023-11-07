@@ -17,7 +17,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.norbertblaise.taskrabbit.R
+import com.norbertblaise.taskrabbit.common.DataStoreManager
 import com.norbertblaise.taskrabbit.common.TimerType
+import com.norbertblaise.taskrabbit.repository.SettingsRepositoryImpl
 import com.norbertblaise.taskrabbit.ui.components.TimerProgressIndicator
 import com.norbertblaise.taskrabbit.ui.theme.Grey
 import com.norbertblaise.taskrabbit.ui.theme.Ink
@@ -35,10 +37,15 @@ fun showToast(context: Context) {
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun PomodoroScreen(
-    viewModel: PomodoroViewModel = viewModel(),
+//    viewModel: PomodoroViewModel = viewModel(),
     onSettingsClick: () -> Unit = {},
     onChartClick: () -> Unit = {}
 ) {
+    val dataStoreManager = DataStoreManager(context = LocalContext.current)
+    val settingsRepositoryImpl = SettingsRepositoryImpl(context = LocalContext.current)
+
+    val viewModel: PomodoroViewModel =
+        viewModel(factory = PomodoroViewModelFactory(dataStoreManager, settingsRepositoryImpl))
     Scaffold(
         modifier = Modifier.padding(16.dp),
         topBar = {
@@ -48,7 +55,9 @@ fun PomodoroScreen(
             )
         },
         content = {
-            PomodoroScreenBody(viewModel = viewModel)
+            PomodoroScreenBody(
+                viewModel = viewModel
+            )
         }
     )
 }
@@ -115,7 +124,7 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
                 timeLeft = viewModel.currentTimeLeftInMillis,
                 label = viewModel.timerLabel,
                 currentPom = viewModel.currentPom.toString(),
-                numPoms = viewModel.numberOfPoms.toString(),
+                numPoms = viewModel.longBreakInterval.toString(),
                 color = viewModel.indicatorColour
             )
         }

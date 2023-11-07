@@ -23,18 +23,28 @@ data class TimerPreferences(
 
     )
 
+val SETTINGS_DATASTORE = "settings"
+
 private const val FOCUS_TIME_DEFAULT = 25
 private const val SHORT_BREAK_TIME_DEFAULT = 25
 private const val LONG_BREAK_TIME_DEFAULT = 25
 private const val LONG_BREAK_INTERVAL_DEFAULT = 25
 
 
+data class UserSettings(
+    val focusTime: Int,
+    val shortBreak: Int,
+    val longBreak: Int,
+    val longBreakInterval: Int
+)
+
 class DataStoreManager(val context: Context) {
-    private val Context.settingsPreferencesDataStore: DataStore<Preferences> by preferencesDataStore(
-        name = "settings"
-    )
+
 
     companion object {
+        private val Context.settingsPreferencesDataStore: DataStore<Preferences> by preferencesDataStore(
+            name = "settings"
+        )
         val FOCUS_TIME = intPreferencesKey("FOCUS_TIME")
         val SHORT_BREAK_TIME = intPreferencesKey("SHORT_BREAK_TIME")
         val LONG_BREAK_TIME = intPreferencesKey("LONG_BREAK_TIME")
@@ -49,10 +59,10 @@ class DataStoreManager(val context: Context) {
             }
         }.map {
             SettingsModel(
-                focusTime = it[PreferencesKeys.FOCUS_TIME] ?: FOCUS_TIME_DEFAULT,
-                shortBreak = it[PreferencesKeys.SHORT_BREAK_TIME] ?: SHORT_BREAK_TIME_DEFAULT,
-                longBreak = it[PreferencesKeys.LONG_BREAK_TIME] ?: LONG_BREAK_TIME_DEFAULT,
-                longBreakInterval = it[PreferencesKeys.NUM_OF_POMS] ?: LONG_BREAK_INTERVAL_DEFAULT,
+                focusTime = it[FOCUS_TIME] ?: FOCUS_TIME_DEFAULT,
+                shortBreak = it[SHORT_BREAK_TIME] ?: SHORT_BREAK_TIME_DEFAULT,
+                longBreak = it[LONG_BREAK_TIME] ?: LONG_BREAK_TIME_DEFAULT,
+                longBreakInterval = it[NUM_OF_POMS] ?: LONG_BREAK_INTERVAL_DEFAULT,
 
                 )
         }
@@ -86,12 +96,12 @@ class DataStoreManager(val context: Context) {
         }
     }
 
-    suspend fun updateLongBreakInterval(timeInMinutes: Int) {
-        context.settingsPreferencesDataStore.edit {
-            it[PreferencesKeys.NUM_OF_POMS] = timeInMinutes
-
-        }
-    }
+//    suspend fun updateLongBreakInterval(timeInMinutes: Int) {
+//        context.settingsPreferencesDataStore.edit {
+//            it[PreferencesKeys.NUM_OF_POMS] = timeInMinutes
+//
+//        }
+//    }
 
     suspend fun saveToDataStore(settings: SettingsModel) {
         context.settingsPreferencesDataStore.edit {

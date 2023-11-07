@@ -1,5 +1,7 @@
 package com.norbertblaise.taskrabbit.ui.settings
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,7 +10,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.RadioButton
 import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Scaffold
@@ -22,11 +28,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.norbertblaise.taskrabbit.common.DataStoreManager
 import com.norbertblaise.taskrabbit.common.descriptionsList
 import com.norbertblaise.taskrabbit.common.settingParameter
 import com.norbertblaise.taskrabbit.models.TimerSettingsParameter
@@ -55,9 +65,14 @@ fun mapIntToTimerSettingsParameter(value: Int): TimerSettingsParameter {
 
 @Composable
 fun SettingsDetailScreen(
+//    settingsViewModel: SettingsViewModel = viewModel(),
     arg: Int,
     onUpButtonClicked: () -> Unit
+
 ) {
+    val dataStoreManager = DataStoreManager(context = LocalContext.current)
+    val viewModel: SettingsViewModel =
+        viewModel(factory = SettingsViewModelFactory(dataStoreManager))
     val timerSettingsParameter = mapIntToTimerSettingsParameter(arg)
     //map int to
     val radioOptions = when (timerSettingsParameter) {
@@ -74,12 +89,15 @@ fun SettingsDetailScreen(
     else "min"
 
 
-    Scaffold(topBar = {
-        SettingsTopAppBar(
-            title = settingParameter[timerSettingsParameter.type],
-            onUpButtonClicked = onUpButtonClicked
-        )
-    }) { innerPadding ->
+    Scaffold(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        topBar = {
+            SettingsTopAppBar(
+                title = settingParameter[timerSettingsParameter.type],
+                onUpButtonClicked = onUpButtonClicked
+            )
+
+        }) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             Text(
                 text = descriptionsList[timerSettingsParameter.type],
@@ -90,7 +108,7 @@ fun SettingsDetailScreen(
             )
             Spacer(Modifier.height(14.dp))
             SettingsOptions(unit = unit, radioOptions = radioOptions)
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(16.dp))
             TextField(
                 value = textValue,
                 onValueChange = {
@@ -107,6 +125,39 @@ fun SettingsDetailScreen(
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                OutlinedButton(
+                    shape = RoundedCornerShape(20.dp),
+                    onClick = {
+                        //todo go back to SettingsScreen.kt
+                    },
+                    border = BorderStroke(1.5.dp, Salmon500),
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = Salmon500,
+                        backgroundColor = Color.Transparent
+                    )
+                ) {
+                    Text(text = "CANCEL")
+                }
+                Spacer(modifier = Modifier.padding(8.dp))
+                Button(
+                    shape = RoundedCornerShape(20.dp),
+                    onClick = {
+                        //todo save current setting to datastore
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = Salmon500,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text(text = "SAVE")
+                }
+            }
 
         }
     }
@@ -144,6 +195,7 @@ fun SettingsOptions(unit: String, radioOptions: List<Any>) {
                     else "$item $unit"
                 )
             }
+
         }
     }
 }
@@ -151,5 +203,7 @@ fun SettingsOptions(unit: String, radioOptions: List<Any>) {
 @Preview(showBackground = true)
 @Composable
 fun SettingsDetailScreenPreview() {
-    SettingsDetailScreen(2, onUpButtonClicked = {/*Do nothing*/ })
+    SettingsDetailScreen(
+//        settingsViewModel = viewModel(),
+        2, onUpButtonClicked = {/*Do nothing*/ })
 }

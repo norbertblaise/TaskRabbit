@@ -4,7 +4,7 @@ import android.os.CountDownTimer
 
 class PomodoroTimer {
     // The length of a pomodoro in milliseconds
-    private val pomodoroLength = 25 * 60 * 1000
+    private val pomodoroLength = 20 * 60 * 1000
 
     // The length of a long break in milliseconds
     private val longBreakLength = 15 * 60 * 1000
