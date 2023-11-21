@@ -101,13 +101,16 @@ class PomodoroViewModel(
     private fun initPomodoro() {
         Log.d(TAG, "initPomodoro called")
         var focusTimeTest = 0
+        var shortBreakTimeTest = 0
         //first check if datastore has data if not push new settings object
         viewModelScope.launch {
             dataStoreManager?.getFromDataStore()?.catch { e ->
                 e.printStackTrace()
             }?.collect {
                 focusTimeTest = it.focusTime
+                shortBreakTimeTest = it.shortBreak
                 Timber.tag(TAG).d("initPomodoro: focusTimeTest value is: %s", focusTimeTest)
+                Timber.tag(TAG).d("initPomodoro: shortBreakTimeTest value is: %s", shortBreakTimeTest)
             }
             if (focusTimeTest == 0) {
                 viewModelScope.launch {

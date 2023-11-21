@@ -25,11 +25,14 @@ data class TimerPreferences(
 
 val SETTINGS_DATASTORE = "settings"
 
-private const val FOCUS_TIME_DEFAULT = 25
-private const val SHORT_BREAK_TIME_DEFAULT = 25
-private const val LONG_BREAK_TIME_DEFAULT = 25
-private const val LONG_BREAK_INTERVAL_DEFAULT = 25
-
+//private const val FOCUS_TIME_DEFAULT = 19
+//private const val SHORT_BREAK_TIME_DEFAULT = 25
+//private const val LONG_BREAK_TIME_DEFAULT = 25
+//private const val LONG_BREAK_INTERVAL_DEFAULT = 25
+private const val FOCUS_TIME_DEFAULT = -1
+private const val SHORT_BREAK_TIME_DEFAULT = -1
+private const val LONG_BREAK_TIME_DEFAULT = -1
+private const val LONG_BREAK_INTERVAL_DEFAULT = -1
 
 data class UserSettings(
     val focusTime: Int,
@@ -77,31 +80,31 @@ class DataStoreManager(val context: Context) {
 
     suspend fun updateFocusTime(timeInMinutes: Int) {
         context.settingsPreferencesDataStore.edit {
-            it[PreferencesKeys.FOCUS_TIME] = timeInMinutes
+            it[FOCUS_TIME] = timeInMinutes
 
         }
     }
 
     suspend fun updateShortBreakTime(timeInMinutes: Int) {
         context.settingsPreferencesDataStore.edit {
-            it[PreferencesKeys.SHORT_BREAK_TIME] = timeInMinutes
+            it[SHORT_BREAK_TIME] = timeInMinutes
 
         }
     }
 
     suspend fun updateLongBreakTime(timeInMinutes: Int) {
         context.settingsPreferencesDataStore.edit {
-            it[PreferencesKeys.LONG_BREAK_TIME] = timeInMinutes
+            it[LONG_BREAK_TIME] = timeInMinutes
 
         }
     }
 
-//    suspend fun updateLongBreakInterval(timeInMinutes: Int) {
-//        context.settingsPreferencesDataStore.edit {
-//            it[PreferencesKeys.NUM_OF_POMS] = timeInMinutes
-//
-//        }
-//    }
+    suspend fun updateLongBreakInterval(timeInMinutes: Int) {
+        context.settingsPreferencesDataStore.edit {
+            it[NUM_OF_POMS] = timeInMinutes
+
+        }
+    }
 
     suspend fun saveToDataStore(settings: SettingsModel) {
         context.settingsPreferencesDataStore.edit {

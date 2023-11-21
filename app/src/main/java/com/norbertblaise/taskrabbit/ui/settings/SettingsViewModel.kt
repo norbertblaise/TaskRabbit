@@ -22,7 +22,7 @@ class SettingsViewModel(private val dataStoreManager: DataStoreManager) : ViewMo
     init {
         Timber.tag(TAG).d("Initblock called: ")
         viewModelScope.launch {
-            dataStoreManager.getFromDataStore().collect{
+            dataStoreManager.getFromDataStore().collect {
                 focusTime = (it.focusTime)
                 shortBreak = (it.shortBreak)
                 longBreak = (it.longBreak)
@@ -30,11 +30,5 @@ class SettingsViewModel(private val dataStoreManager: DataStoreManager) : ViewMo
                 settings.postValue(it)
             }
         }
-
-    }
-
-
-    private fun updateSettings(){
-
     }
 }

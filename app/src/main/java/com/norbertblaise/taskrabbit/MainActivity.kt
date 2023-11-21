@@ -50,24 +50,29 @@ class MainActivity : ComponentActivity() {
             dataStoreManager.getFromDataStore().catch {
                 it.printStackTrace()
             }.collect {
-                if (it.focusTime <= 0) {
-                    storeEmpty = true
-                    Timber.tag(TAG).d("onCreate: focusTime is: " + it.focusTime)
+                storeEmpty = (it.focusTime < 0)
+//                if (it.focusTime < 0) {
+//                    storeEmpty = true
+//                    Log.d(TAG,"onCreate: focusTime is: ${it.focusTime}")
+//                }
+
+                Timber.tag(TAG).d("onCreate: storeEmpty is %s", storeEmpty)
+                //populate datastore with default data
+                if (storeEmpty) {
+                    initSettings()
+                    storeEmpty = false
                 }
             }
         }
-        //populate datastore with default data
-        if (storeEmpty) {
-            initSettings()
-            storeEmpty = false
-        }
+
+
         Timber.plant(Timber.DebugTree())
         AndroidLogcatLogger.installOnDebuggableApp(application, minPriority = LogPriority.VERBOSE)
 
     }
 
     private fun initSettings() {
-        Log.d(TAG, "initSettings: called")
+        Timber.tag(TAG).d("initSettings: called")
         val defaultSettings = SettingsModel(
             focusTime = 25,
             shortBreak = 5,
