@@ -1,5 +1,6 @@
 package com.norbertblaise.taskrabbit.ui.settings
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -67,6 +68,7 @@ fun SettingsDetailScreen(
 
     val selectedOption = viewModel.selectedOption
     Timber.tag(TAG).d("SettingsDetailScreen: selectedOption is %s", selectedOption)
+    Log.d(TAG, "SettingsDetailScreen: ")
     val onOptionSelected = viewModel.selectedOption
 
 //    var textValue by remember {

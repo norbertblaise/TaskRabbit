@@ -3,6 +3,7 @@ package com.norbertblaise.taskrabbit
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -99,9 +100,20 @@ fun TaskRabbitApp() {
             //todo add NavHost
             TaskRabbitNavHost(
                 dataStoreManager = dataStoreManager,
-                navController = navController, modifier =
-                Modifier.padding()
+                navController = navController,
+                modifier = Modifier.padding()
             )
+        }
+        BackHandler {
+            val backStackEntry: NavBackStackEntry? = navController.previousBackStackEntry
+            if (backStackEntry != null) {
+                val backStackNames = navController
+                    .backQueue
+                    .map { it.destination.route }
+                    .joinToString(", ")
+
+                Log.d("BackStackLog", "Back stack: $backStackNames")
+            }
         }
     }
 }
@@ -158,7 +170,10 @@ fun TaskRabbitNavHost(
                 navBackStackEntry.arguments?.getInt(SettingsDetail.settingsParameterType)
             SettingsDetailScreen(
                 arg = settingsParam!!,
-                onUpButtonClicked = { navController.popBackStack() })
+                onUpButtonClicked = {
+                    navController.popBackStack()
+                }
+            )
         }
 
     }
@@ -167,9 +182,10 @@ fun TaskRabbitNavHost(
 
 fun NavHostController.navigateSingleTopTo(route: String) =
     this.navigate(route) {
-        popUpTo(this@navigateSingleTopTo.graph.findStartDestination().id) {
-            saveState = true
-        }
+//        popUpTo(this@navigateSingleTopTo.graph.findStartDestination().id) {
+//            saveState = true
+//        }
+        launchSingleTop = true
     }
 
 private fun NavHostController.navigateToSettingsDetail(settingsCategory: Int) =
