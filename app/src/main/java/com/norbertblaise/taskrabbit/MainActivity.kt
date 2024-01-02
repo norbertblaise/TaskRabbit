@@ -72,6 +72,10 @@ class MainActivity : ComponentActivity() {
 
     }
 
+    override fun onResume() {
+        super.onResume()
+    }
+
     private fun initSettings() {
         Timber.tag(TAG).d("initSettings: called")
         val defaultSettings = SettingsModel(
@@ -83,6 +87,11 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             dataStoreManager.saveToDataStore(defaultSettings)
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+
     }
 }
 
@@ -97,7 +106,7 @@ fun TaskRabbitApp() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
         ) {
-            //todo add NavHost
+
             TaskRabbitNavHost(
                 dataStoreManager = dataStoreManager,
                 navController = navController,

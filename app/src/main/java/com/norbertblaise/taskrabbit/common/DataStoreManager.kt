@@ -3,13 +3,17 @@ package com.norbertblaise.taskrabbit.common
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.norbertblaise.taskrabbit.models.CurrentTimerValues
 import com.norbertblaise.taskrabbit.models.SettingsModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import logcat.asLog
 import logcat.logcat
@@ -52,6 +56,20 @@ class DataStoreManager(val context: Context) {
         val SHORT_BREAK_TIME = intPreferencesKey("SHORT_BREAK_TIME")
         val LONG_BREAK_TIME = intPreferencesKey("LONG_BREAK_TIME")
         val NUM_OF_POMS = intPreferencesKey("NUM_OF_POMS")
+
+        //running timer
+        val TIMER_STATE = intPreferencesKey("TIMER_STATE")
+        val TIMER_TYPE = intPreferencesKey("TIMER_TYPE")
+        val APP_VISIBILITY = intPreferencesKey("APP_VISIBILITY")
+        val CURRENT_TIME_LEFT = longPreferencesKey("CURRENT_TIME_LEFT")
+        val CURRENT_POM = intPreferencesKey("CURRENT_POM")
+
+
+        val ALARM_SET_TIME = longPreferencesKey("ALARM_SET_TIME")
+        //flags
+        val SERVICE_RUNNING_FLAG = booleanPreferencesKey("SERVICE_RUNNING_FLAG")
+        val TIMER_VALUES_LOADED_FLAG = booleanPreferencesKey("TIMER_VALUES_LOADED_FLAG")
+
     }
 
     val timerPreferences: Flow<SettingsModel> = context.settingsPreferencesDataStore.data
@@ -106,6 +124,18 @@ class DataStoreManager(val context: Context) {
         }
     }
 
+    suspend fun saveAlarmSetTime(currentTime: Long) {
+        context.settingsPreferencesDataStore.edit {
+            it[ALARM_SET_TIME] = currentTime
+        }
+    }
+
+    suspend fun getAlarmSetTime(): Long {
+        val alarmSetTime = context.settingsPreferencesDataStore.data.first()
+        return alarmSetTime[ALARM_SET_TIME] ?: 0
+
+    }
+
     suspend fun saveToDataStore(settings: SettingsModel) {
         context.settingsPreferencesDataStore.edit {
             it[FOCUS_TIME] = settings.focusTime
@@ -124,6 +154,72 @@ class DataStoreManager(val context: Context) {
             longBreakInterval = it[NUM_OF_POMS] ?: 0,
 
             )
+    }
+
+    suspend fun saveRunningParams(
+        timeLeftInMillis: Long,
+        timerType: Int,
+        timerState: Int,
+        appVisibility: Int,
+        currentPom: Int
+
+    ) {
+        context.settingsPreferencesDataStore.edit {
+            it[CURRENT_TIME_LEFT] = timeLeftInMillis
+            it[TIMER_TYPE] = timerType
+            it[TIMER_STATE] = timerState
+            it[APP_VISIBILITY] = appVisibility
+            it[CURRENT_POM] = currentPom
+
+        }
+
+
+    }
+
+    suspend fun getBackgroundTimerParams() = context.settingsPreferencesDataStore.data.map {
+        CurrentTimerValues(
+            timeLeftInMillis = it[CURRENT_TIME_LEFT] ?: -0L,
+            timerType = it[TIMER_TYPE] ?: -1,
+            timerState = it[TIMER_STATE] ?: -1,
+            appVisibility = it[APP_VISIBILITY] ?: -1,
+            currentPom = it[CURRENT_POM] ?: -1,
+        )
+    }
+
+    /**
+     * saves the serviceRunningFlag
+     */
+
+    suspend fun saveServiceRunningFlag(serviceRunningFlag: Boolean) {
+        context.settingsPreferencesDataStore.edit {
+            it[SERVICE_RUNNING_FLAG] = serviceRunningFlag
+        }
+    }
+    /**
+     * observes the servieRunningFlag
+     */
+    suspend fun observeServiceRunningFlag(): Flow<Boolean> {
+        return context.settingsPreferencesDataStore.data.map {
+            it[SERVICE_RUNNING_FLAG] ?: false
+        }
+    }
+
+    /**
+     * saves the valuesLoadedFlag
+     */
+
+    suspend fun saveValuesLoadedFlag(valuesLoadedFlag: Boolean) {
+        context.settingsPreferencesDataStore.edit {
+            it[SERVICE_RUNNING_FLAG] = valuesLoadedFlag
+        }
+    }
+    /**
+     * observes the valuesLoadedFlag
+     */
+    suspend fun observeValuesLoadedFlag(): Flow<Boolean> {
+        return context.settingsPreferencesDataStore.data.map {
+            it[TIMER_VALUES_LOADED_FLAG] ?: false
+        }
     }
 
 }

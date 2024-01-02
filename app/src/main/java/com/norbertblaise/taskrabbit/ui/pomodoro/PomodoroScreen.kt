@@ -12,18 +12,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.norbertblaise.taskrabbit.R
 import com.norbertblaise.taskrabbit.common.DataStoreManager
+import com.norbertblaise.taskrabbit.common.TimerState
 import com.norbertblaise.taskrabbit.common.TimerType
 import com.norbertblaise.taskrabbit.repository.SettingsRepositoryImpl
 import com.norbertblaise.taskrabbit.ui.components.TimerProgressIndicator
 import com.norbertblaise.taskrabbit.ui.theme.Grey
 import com.norbertblaise.taskrabbit.ui.theme.Ink
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 
@@ -39,13 +46,110 @@ fun showToast(context: Context) {
 fun PomodoroScreen(
 //    viewModel: PomodoroViewModel = viewModel(),
     onSettingsClick: () -> Unit = {},
-    onChartClick: () -> Unit = {}
+    onChartClick: () -> Unit = {},
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+//    onEvent: (LifecycleOwner, Lifecycle.Event) -> Unit
 ) {
+    val context = LocalContext.current
     val dataStoreManager = DataStoreManager(context = LocalContext.current)
     val settingsRepositoryImpl = SettingsRepositoryImpl(context = LocalContext.current)
 
     val viewModel: PomodoroViewModel =
-        viewModel(factory = PomodoroViewModelFactory(dataStoreManager, settingsRepositoryImpl))
+        viewModel(
+            factory = PomodoroViewModelFactory(
+                dataStoreManager,
+                settingsRepositoryImpl,
+                lifecycleOwner
+            )
+        )
+
+    DisposableEffect(lifecycleOwner) {
+        // Create an observer that triggers our remembered callbacks
+        // for lifecycle events
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_CREATE -> {
+                    Toast.makeText(
+                        context,
+                        "DisposableEffectWithLifeCycle ON_CREATE",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                Lifecycle.Event.ON_START -> {
+
+                    Toast.makeText(
+                        context,
+                        "DisposableEffectWithLifeCycle ON_START",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                Lifecycle.Event.ON_RESUME -> {
+//                    currentOnResume()
+                    lifecycleOwner.lifecycleScope.launch {
+                        viewModel.onActivityStarted(context)
+                    }
+                    Toast.makeText(
+                        context,
+                        "DisposableEffectWithLifeCycle ON_RESUME",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                Lifecycle.Event.ON_PAUSE -> {
+
+                    Toast.makeText(
+                        context,
+                        "DisposableEffectWithLifeCycle ON_PAUSE",
+                        Toast.LENGTH_SHORT
+                    ).show()
+//                    currentOnPause()
+                }
+
+                Lifecycle.Event.ON_STOP -> {
+
+
+                    lifecycleOwner.lifecycleScope.launch {
+                        if (viewModel.timerState == TimerState.RUNNING) {
+                            viewModel.onActivityStopped(context)
+                        }
+                    }
+                    Toast.makeText(
+                        context,
+                        "DisposableEffectWithLifeCycle ON_STOP",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                Lifecycle.Event.ON_DESTROY -> {
+                    Toast.makeText(
+                        context,
+                        "DisposableEffectWithLifeCycle ON_DESTROY",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                else -> {}
+            }
+        }
+
+        // Add the observer to the lifecycle
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        // When the effect leaves the Composition, remove the observer
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+
+            Toast.makeText(
+                context,
+                "DisposableEffectWithLifeCycle composition EXIT",
+                Toast.LENGTH_SHORT
+            )
+                .show()
+        }
+    }
+
     Scaffold(
         modifier = Modifier.padding(16.dp),
         topBar = {
@@ -150,7 +254,7 @@ fun PomodoroScreenBody(viewModel: PomodoroViewModel) {
             Spacer(modifier = Modifier.width(8.dp))
             ExtendedFloatingActionButton(
                 onClick = {
-                    Timber.d("PomodoroScreenBody: startbutton clicked")/*TODO*/
+                    Timber.d("PomodoroScreenBody: startbutton clicked")
                     viewModel.onStartStopButtonClick()
                 },
                 icon = {
@@ -247,5 +351,5 @@ fun PomodoroScreenBodyPreview() {
 @Preview(showBackground = true)
 @Composable
 fun PomodoroScreenPreview() {
-    PomodoroScreen()
+//    PomodoroScreen()
 }

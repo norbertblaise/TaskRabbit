@@ -7,3 +7,6 @@ enum class TimerType{
 enum class TimerState{
     INITIAL, RUNNING, PAUSED, STOPPED
 }
+enum class AppVisibility{
+        FOREGROUND, BACKGROUND
+}

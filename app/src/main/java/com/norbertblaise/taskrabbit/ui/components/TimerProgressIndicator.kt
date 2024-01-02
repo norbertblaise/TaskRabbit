@@ -3,15 +3,20 @@ package com.norbertblaise.taskrabbit.ui.components
 import android.text.format.DateUtils
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
@@ -21,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.norbertblaise.taskrabbit.ui.theme.Grey
 import com.norbertblaise.taskrabbit.ui.theme.Salmon500
-import timber.log.Timber
 
 
 fun formatTime(timeInLong: Long): String {
@@ -46,7 +50,7 @@ fun TimerProgressIndicator(
     var value by remember {
         mutableStateOf(percentage)
     }
-    Timber.d("TimerProgressIndicator: value is $value")
+//    Timber.d("TimerProgressIndicator: value is $value")
     var currPercentage = animateFloatAsState(
         targetValue = value,
         animationSpec = tween(durationMillis = 1000, delayMillis = 0)

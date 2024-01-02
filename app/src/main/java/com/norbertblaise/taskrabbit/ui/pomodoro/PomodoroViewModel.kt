@@ -1,14 +1,22 @@
 package com.norbertblaise.taskrabbit.ui.pomodoro
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.norbertblaise.taskrabbit.R
+import com.norbertblaise.taskrabbit.TimerCompleteReceiver
+import com.norbertblaise.taskrabbit.TimerService
+import com.norbertblaise.taskrabbit.common.AppVisibility
 import com.norbertblaise.taskrabbit.common.DataStoreManager
 import com.norbertblaise.taskrabbit.common.TimerState
 import com.norbertblaise.taskrabbit.common.TimerType
@@ -20,13 +28,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.Calendar
 
 private const val TAG = "PomodoroViewModel"
 
 class PomodoroViewModel(
     private val dataStoreManager: DataStoreManager? = null,
-    private val settingsRepositoryImpl: SettingsRepositoryImpl
-) : ViewModel() {
+    private val settingsRepositoryImpl: SettingsRepositoryImpl,
+    private val lifecycleOwner: LifecycleOwner,
+
+    ) : ViewModel() {
     private val timerPreferences = dataStoreManager?.timerPreferences
 
     var settingsFlow = timerPreferences
@@ -57,22 +68,57 @@ class PomodoroViewModel(
 
     var timerType = TimerType.INITIAL
     var timerState = TimerState.STOPPED
-    var timerDuration = 8000L// todo get initial duration from the settings
+    var appVisibility = AppVisibility.FOREGROUND
+    var timerDuration = 8000L//  get initial duration from the settings
     var currentTimeLeftInPercentage by mutableStateOf(1.0f)
     var currentTimeLeftInSeconds by mutableStateOf(0L)
     lateinit var timer: CountDownTimer
 
     var showDialog by mutableStateOf(false)
 
+    companion object {
+        //setting alarm
+
+
+    }
+
+    val nowSeconds: Long
+        get() = Calendar.getInstance().timeInMillis / 1000
+
+    suspend fun setAlarm(context: Context, nowSeconds: Long, secondsRemaining: Long): Long {
+        val wakeUpTime = (nowSeconds + secondsRemaining) * 1000
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, TimerCompleteReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        // alarmManager.setExact(AlarmManager.RTC_WAKEUP, wakeUpTime, pendingIntent)
+        //saving alarm set time to datastore
+        dataStoreManager?.saveAlarmSetTime(nowSeconds)
+        return wakeUpTime
+    }
+
+    suspend fun removeAlarm(context: Context) {
+        val intent = Intent(context, TimerCompleteReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.cancel(pendingIntent)
+        dataStoreManager?.saveAlarmSetTime(0L)
+    }
+
     init {
 
         settings = SettingsModel()
 
         viewModelScope.launch {
-            dataStoreManager!!.getFromDataStore().collect{
-                focusTime = (it.focusTime) *60 *1000.toLong()
-                shortBreakTime = (it.shortBreak) *60 *1000.toLong()
-                longBreakTime = (it.longBreak) *60 *1000.toLong()
+            dataStoreManager!!.getFromDataStore().collect {
+                focusTime = (it.focusTime) * 60 * 1000.toLong()
+                shortBreakTime = (it.shortBreak) * 60 * 1000.toLong()
+                longBreakTime = (it.longBreak) * 60 * 1000.toLong()
                 longBreakInterval = it.longBreakInterval
             }
         }
@@ -110,7 +156,8 @@ class PomodoroViewModel(
                 focusTimeTest = it.focusTime
                 shortBreakTimeTest = it.shortBreak
                 Timber.tag(TAG).d("initPomodoro: focusTimeTest value is: %s", focusTimeTest)
-                Timber.tag(TAG).d("initPomodoro: shortBreakTimeTest value is: %s", shortBreakTimeTest)
+                Timber.tag(TAG)
+                    .d("initPomodoro: shortBreakTimeTest value is: %s", shortBreakTimeTest)
             }
             if (focusTimeTest == 0) {
                 viewModelScope.launch {
@@ -120,21 +167,24 @@ class PomodoroViewModel(
                     Timber.tag(TAG)
                         .d("initPomodoro: focustime  sent to Datastore is: %s", settings.focusTime)
                     Timber.tag(TAG)
-                        .d("initPomodoro: shortbreaktime  sent to Datastore is: %s", settings.shortBreak)
+                        .d(
+                            "initPomodoro: shortbreaktime  sent to Datastore is: %s",
+                            settings.shortBreak
+                        )
 
                 }.invokeOnCompletion {
                     loadPomValues()
                 }
 
-            }else {
+            } else {
                 Log.d(TAG, "initPomodoro: else block called")
-                //todo connect to settings mechanisim
+
                 viewModelScope.launch(Dispatchers.IO) {
-                    dataStoreManager?.getFromDataStore()?.catch { e->
+                    dataStoreManager?.getFromDataStore()?.catch { e ->
                         e.printStackTrace()
-                    }?.collect{
-                        focusTime = (it.focusTime) *60 *1000L
-                        shortBreakTime = (it.shortBreak) *60 *1000L
+                    }?.collect {
+                        focusTime = (it.focusTime) * 60 * 1000L
+                        shortBreakTime = (it.shortBreak) * 60 * 1000L
                     }
                 }
             }
@@ -156,6 +206,71 @@ class PomodoroViewModel(
         pomIsInitialized = true
     }
 
+    /**
+     * Called when the activity is started, creates a timer with the values from the datastore or starts a fresh timer
+     */
+    suspend fun onActivityStarted(context: Context) {
+        appVisibility = AppVisibility.FOREGROUND
+        context.stopService(Intent(context, TimerService::class.java))
+        //if timer is running, resume it otherwise, do nothing
+        if (timerState == TimerState.RUNNING) {
+            Timber.tag(TAG).d("onActivityStarted: if block called")
+            //get values from dataStore
+            viewModelScope.launch(Dispatchers.Main) {
+                dataStoreManager?.observeServiceRunningFlag()?.collect {
+                    if (!it){
+                        dataStoreManager?.getBackgroundTimerParams()?.catch { e ->
+                            e.printStackTrace()
+                        }?.collect  {
+                            currentTimeLeftInMillis = it.timeLeftInMillis
+                            timerState = TimerState.values()[it.timerState]
+                            timerType = TimerType.values()[it.timerType]
+                            currentPom = it.currentPom
+                            //set the timer values loaded flag to true
+                            initPomodoro()
+                            resumeTimer()
+                        }
+                    }
+                }
+                //resumeTimer when the values have finished loading from the datastore
+
+            }
+
+
+        }
+    }
+
+
+
+    /**
+     * Called when the activity is stopped, it cancels the timer and saves the current timer variables to the DataStore
+     */
+    suspend fun onActivityStopped(context: Context) {
+        if (timerState == TimerState.RUNNING) {
+            Log.d(TAG, "onActivityStopped: TimerState is ${timerState}")
+            appVisibility = AppVisibility.BACKGROUND
+            //stop timer
+            stopTimer()
+            timerState = TimerState.RUNNING
+        }
+        //save values to datastore
+        storeTimerValues()
+        //start service
+        context.startService(Intent(context, TimerService::class.java))
+    }
+
+    private suspend fun storeTimerValues() {
+        Timber.tag(TAG).d("storeTimerValues: Time left is %s", currentTimeLeftInMillis / 1000)
+        //convert TimerType and TimerState to in, extract Ordinal
+        dataStoreManager?.saveRunningParams(
+            timeLeftInMillis = currentTimeLeftInMillis,
+            timerState = timerState.ordinal,
+            timerType = timerType.ordinal,
+            appVisibility = appVisibility.ordinal,
+            currentPom = currentPom
+        )
+    }
+
 
     /**
      * Click handler for startStopButton
@@ -171,7 +286,7 @@ class PomodoroViewModel(
                 } else {
                     startTimer()
                 }
-            }//todo start timer
+            }
             TimerState.PAUSED -> {
                 resumeTimer()
                 TimerState.RUNNING
@@ -252,8 +367,9 @@ class PomodoroViewModel(
     }
 
     private fun resumeTimer() {
+//get timeLeftInMillis from datastore
         timer.cancel()
-        Timber.d("$TAG resumeTimer: resuming with $currentTimeLeftInMillis time left")
+        Timber.d("$TAG resumeTimer: resuming with ${currentTimeLeftInMillis / 1000} time left")
         //convert currentTimeLeft from Seconds to Millis
         createTimer(currentTimeLeftInMillis)
         timer.start()
@@ -261,11 +377,28 @@ class PomodoroViewModel(
         setStartPauseButtonContents()
     }
 
+    private fun getTimerParamsFromDatastore() {
+        viewModelScope.launch {
+            dataStoreManager?.getBackgroundTimerParams()?.catch { e ->
+                e.printStackTrace()
+            }?.collect {
+                Timber.tag(TAG)
+                    .d("getTimerParamsFromDatastore: timeLeftInMillis is %s", it.timeLeftInMillis)
+                currentTimeLeftInMillis = it.timeLeftInMillis
+                Timber.d("getTimerParamsFromDatastore: currentTimeLeftInMillis is " + currentTimeLeftInMillis)
+                timerState = TimerState.values()[it.timerState]
+                timerType = TimerType.values()[it.timerType]
+                currentPom = it.currentPom
+            }
+
+        }
+    }
+
     /**
      * creates a timer object with the specified duration
      */
     private fun createTimer(duration: Long) {
-        Timber.d("$TAG createTimer: timer created with $duration duration")
+        Timber.d("$TAG createTimer: timer created with ${duration/1000} duration")
         timer = object : CountDownTimer(duration, 1) {
             override fun onFinish() {
                 timerState = TimerState.STOPPED
@@ -378,6 +511,7 @@ class PomodoroViewModel(
             TimerType.SHORTBREAK -> {
                 currentPom++
                 timerType = TimerType.FOCUS
+
             }
 
             TimerType.LONGBREAK -> {

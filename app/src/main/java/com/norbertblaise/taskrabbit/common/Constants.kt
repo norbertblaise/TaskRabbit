@@ -12,3 +12,7 @@ val settingParameter = listOf(
     "Long Break",
     "Long Break Interval"
 )
+const val ACTION_STOPPED = "stop"
+const val ACTION_PAUSE = "pause"
+const val ACTION_RESUME = "resume"
+const val ACTION_START = "start"
